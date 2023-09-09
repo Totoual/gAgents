@@ -1,0 +1,18 @@
+// messages.proto
+syntax = "proto3";
+package messages;
+option go_package= "github.com/totoual/gAgents/proto";
+
+message MessageRequest {
+    string sender = 1;
+    string receiver = 2;
+    string content = 3;
+}
+
+message MessageResponse {
+    string status = 1;
+}
+
+service MessageService {
+    rpc SendMessage (MessageRequest) returns (MessageResponse);
+}
