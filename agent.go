@@ -28,6 +28,7 @@ type Agent struct {
 
 type Server struct {
 	pb.MessageServiceServer
+	Agent *Agent
 }
 
 func NewAgent(name string, addr string) *Agent {
@@ -63,28 +64,33 @@ func (a *Agent) DoSendMessage(addr string, receiver string, content string) (*pb
 	return response, nil
 }
 
-func (a *Server) SendMessage(ctx context.Context, in *pb.MessageRequest) (*pb.MessageResponse, error) {
+func (s *Server) SendMessage(ctx context.Context, in *pb.MessageRequest) (*pb.MessageResponse, error) {
 	log.Printf("SendMessage function was invoked with %v\n", in)
+
+	message := Message{
+		Sender:  in.Sender,
+		Content: in.Content,
+	}
+	s.Agent.InMessageQueue <- message
+	log.Printf("Added a new message in the InMessageQueue: %v", message)
 	return &pb.MessageResponse{
 		Status: "OK",
 	}, nil
 }
 
-func (a *Agent) SendAsyncMessage(receiver string, content string) {
-	a.OutMessageQueue <- Message{
-		Sender:  a.name,
-		Content: content,
+func (a *Agent) ConsumeInMessages() {
+	for {
+		select {
+		case message := <-a.InMessageQueue:
+			// Process the received message here
+			log.Printf("%s: Received message from %s: %s\n", a.name, message.Sender, message.Content)
+		}
 	}
-}
-
-func (a *Agent) HandleReceivedMessage(message Message) {
-	// Process the received message here or pass it to a handler.
-	log.Printf("%s: Received message from %s: %s\n", a.name, message.Sender, message.Content)
 }
 
 func (a *Agent) Run(ctx context.Context) {
 	a.grpcSrv = grpc.NewServer()
-	pb.RegisterMessageServiceServer(a.grpcSrv, &Server{})
+	pb.RegisterMessageServiceServer(a.grpcSrv, &Server{Agent: a})
 	lis, err := net.Listen("tcp", a.Addr)
 
 	if err != nil {
