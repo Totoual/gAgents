@@ -15,7 +15,17 @@ import (
 
 type Message struct {
 	Sender  string
+	Type    string
 	Content string
+}
+
+type Server struct {
+	pb.MessageServiceServer
+	Agent *Agent
+}
+
+type MessageHandler interface {
+	HandleMessage(message Message)
 }
 
 type Agent struct {
@@ -24,11 +34,7 @@ type Agent struct {
 	InMessageQueue  chan Message
 	OutMessageQueue chan Message
 	grpcSrv         *grpc.Server
-}
-
-type Server struct {
-	pb.MessageServiceServer
-	Agent *Agent
+	messageHandlers map[string]MessageHandler
 }
 
 func NewAgent(name string, addr string) *Agent {
@@ -37,6 +43,7 @@ func NewAgent(name string, addr string) *Agent {
 		Addr:            addr,
 		InMessageQueue:  make(chan Message),
 		OutMessageQueue: make(chan Message),
+		messageHandlers: make(map[string]MessageHandler),
 	}
 }
 
@@ -82,13 +89,32 @@ func (a *Agent) ConsumeInMessages() {
 	for {
 		select {
 		case message := <-a.InMessageQueue:
+			a.DispatchMessage(message)
 			// Process the received message here
 			log.Printf("%s: Received message from %s: %s\n", a.name, message.Sender, message.Content)
 		}
 	}
 }
 
+func (a *Agent) RegisterMessageHandler(messageType string, handler MessageHandler) {
+	a.messageHandlers[messageType] = handler
+}
+
+func (a *Agent) DispatchMessage(message Message) {
+	handler, exists := a.messageHandlers[message.Type]
+	if !exists {
+		log.Printf("No handler found for message type: %s", message.Type)
+		return
+	}
+
+	handler.HandleMessage(message)
+}
+
 func (a *Agent) Run(ctx context.Context) {
+	// Start consuming messages
+	go a.ConsumeInMessages()
+
+	// Start the gRPC server.
 	a.grpcSrv = grpc.NewServer()
 	pb.RegisterMessageServiceServer(a.grpcSrv, &Server{Agent: a})
 	lis, err := net.Listen("tcp", a.Addr)
