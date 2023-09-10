@@ -60,7 +60,7 @@ func (a *Agent) DoSendMessage(addr string, receiver string, content string) (*pb
 
 	// Send the message via gRPC
 	response, err := client.SendMessage(ctx, &pb.MessageRequest{
-		Sender:   a.name,
+		Sender:   a.Addr,
 		Receiver: receiver,
 		Content:  content,
 	})
@@ -96,7 +96,7 @@ func (a *Agent) ConsumeInMessages() {
 	}
 }
 
-func (a *Agent) RegisterMessageHandler(messageType string, handler MessageHandler) {
+func (a *Agent) RegisterHandler(messageType string, handler MessageHandler) {
 	a.messageHandlers[messageType] = handler
 }
 
