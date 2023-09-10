@@ -7,6 +7,7 @@ message MessageRequest {
     string sender = 1;
     string receiver = 2;
     string content = 3;
+    string type = 4;
 }
 
 message MessageResponse {

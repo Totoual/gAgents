@@ -14,9 +14,10 @@ import (
 )
 
 type Message struct {
-	Sender  string
-	Type    string
-	Content string
+	Receiver string
+	Sender   string
+	Type     string
+	Content  string
 }
 
 type Server struct {
@@ -47,13 +48,14 @@ func NewAgent(name string, addr string) *Agent {
 	}
 }
 
-func (a *Agent) DoSendMessage(addr string, receiver string, content string) (*pb.MessageResponse, error) {
-	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+func (a *Agent) doSendMessage(m Message) (*pb.MessageResponse, error) {
+	log.Printf("Trying to send the message to %v", m.Receiver)
+	log.Printf("The content is: %v", m.Content)
+	conn, err := grpc.Dial(m.Receiver, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, fmt.Errorf("Failed to connect: %v", err)
 	}
 	defer conn.Close()
-
 	client := pb.NewMessageServiceClient(conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
@@ -61,8 +63,8 @@ func (a *Agent) DoSendMessage(addr string, receiver string, content string) (*pb
 	// Send the message via gRPC
 	response, err := client.SendMessage(ctx, &pb.MessageRequest{
 		Sender:   a.Addr,
-		Receiver: receiver,
-		Content:  content,
+		Receiver: m.Receiver,
+		Content:  m.Content,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("Error sending message: %v", err)
@@ -77,6 +79,7 @@ func (s *Server) SendMessage(ctx context.Context, in *pb.MessageRequest) (*pb.Me
 	message := Message{
 		Sender:  in.Sender,
 		Content: in.Content,
+		Type:    in.Type,
 	}
 	s.Agent.InMessageQueue <- message
 	log.Printf("Added a new message in the InMessageQueue: %v", message)
@@ -92,6 +95,20 @@ func (a *Agent) ConsumeInMessages() {
 			a.DispatchMessage(message)
 			// Process the received message here
 			log.Printf("%s: Received message from %s: %s\n", a.name, message.Sender, message.Content)
+		}
+	}
+}
+
+func (a *Agent) ConsumeOutMessages() {
+	for {
+		log.Printf("Consuming messages")
+		log.Printf("%v", len(a.OutMessageQueue))
+		select {
+		case message := <-a.OutMessageQueue:
+			log.Printf("Consuming message: %v", message)
+			a.doSendMessage(message)
+
+			time.Sleep(time.Millisecond * 100)
 		}
 	}
 }
@@ -113,7 +130,7 @@ func (a *Agent) DispatchMessage(message Message) {
 func (a *Agent) Run(ctx context.Context) {
 	// Start consuming messages
 	go a.ConsumeInMessages()
-
+	go a.ConsumeOutMessages()
 	// Start the gRPC server.
 	a.grpcSrv = grpc.NewServer()
 	pb.RegisterMessageServiceServer(a.grpcSrv, &Server{Agent: a})
