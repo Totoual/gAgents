@@ -25,10 +25,6 @@ func main() {
 		a.Run(ctx)
 	}()
 
-	// Start the ConsumeOutMessages and ConsumeInMessages goroutines
-	go a.ConsumeOutMessages()
-
-	log.Printf("YOOOHOO")
 	time.Sleep(1 * time.Second)
 
 	// Send a message
@@ -43,5 +39,4 @@ func main() {
 	// Wait for the wait group to signal that the agent.Run() is done
 	wg.Wait()
 
-	log.Printf("The len of the OutMessageQueue is : %v", len(a.OutMessageQueue))
 }
