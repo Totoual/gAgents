@@ -15,7 +15,7 @@ func (h *GreetingHandler) HandleMessage(message gAgents.Message) {
 	// Implement the handling logic for greeting messages here
 	if message.Type == "greet" {
 		// Assuming the greeting message format is "Hello, {Receiver}!"
-		log.Printf("Received greeting: %s\n", message.Content)
+		log.Printf("Received greeting: %s\n", string(message.Content))
 
 		// Send a response back to the sender
 	} else {

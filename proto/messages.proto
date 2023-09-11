@@ -4,10 +4,21 @@ package messages;
 option go_package= "github.com/totoual/gAgents/proto";
 
 message MessageRequest {
+
+    enum MessageType {
+        REQUEST = 0;
+        INFORM = 1;
+        AGREE = 2;
+        REFUSE = 3;
+        CONFIRM = 4;
+    }
+
+
     string sender = 1;
     string receiver = 2;
-    string content = 3;
-    string type = 4;
+    bytes content = 3;
+    MessageType type = 4;
+    string uuid = 5;
 }
 
 message MessageResponse {

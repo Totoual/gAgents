@@ -32,7 +32,7 @@ func main() {
 		Receiver: "0.0.0.0:8002",
 		Sender:   "0.0.0.0:8003",
 		Type:     "greet",
-		Content:  "Hello!",
+		Content:  []byte("Hello!"),
 	}
 	log.Printf("Added the message in the Queue")
 

@@ -66,7 +66,7 @@ func TestAgentCommunication(t *testing.T) {
 	agent1.OutMessageQueue <- gAgents.Message{
 		Receiver: agent2.Addr,
 		Type:     "greet",
-		Content:  "Hello!",
+		Content:  []byte("Hello!"),
 	}
 
 	// Allow time for message processing
