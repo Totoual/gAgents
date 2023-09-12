@@ -1,6 +1,7 @@
 package tests_test
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -49,7 +50,8 @@ func (t *TestTask) RescheduleTaskAt(newTime time.Time) gAgents.Task {
 }
 
 func TestTaskScheduler_ExecuteTasks(t *testing.T) {
-	taskScheduler := gAgents.NewTaskScheduler()
+	ctx, cancel := context.WithCancel(context.Background())
+	taskScheduler := gAgents.NewTaskScheduler(ctx)
 
 	// Create a test task and add it to the scheduler
 	now := time.Now()
@@ -72,4 +74,6 @@ func TestTaskScheduler_ExecuteTasks(t *testing.T) {
 	if _, exists := taskScheduler.Tasks[task.ID()]; exists {
 		t.Errorf("Task was not removed from the scheduler")
 	}
+
+	cancel()
 }
