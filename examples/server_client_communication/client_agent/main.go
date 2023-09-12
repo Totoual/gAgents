@@ -1,17 +1,15 @@
 package main
 
 import (
-	"context"
 	"log"
 	"sync"
 	"time"
 
-	"github.com/totoual/gAgents"
+	gAgents "github.com/totoual/gAgents/agent"
 )
 
 func main() {
 	a := gAgents.NewAgent("test2", "0.0.0.0:8003")
-	ctx := context.Background()
 
 	// Create a wait group
 	var wg sync.WaitGroup
@@ -22,7 +20,7 @@ func main() {
 	// Start the agent in a goroutine
 	go func() {
 		defer wg.Done() // When the agent.Run() exits, signal that it's done
-		a.Run(ctx)
+		a.Run()
 	}()
 
 	time.Sleep(1 * time.Second)

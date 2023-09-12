@@ -26,7 +26,7 @@ type Server struct {
 	Agent *Agent
 }
 
-type MessageHandler interface {
+type Handler interface {
 	HandleMessage(message Message)
 }
 
@@ -41,18 +41,25 @@ type Agent struct {
 	InMessageQueue  chan Message
 	OutMessageQueue chan Message
 	grpcSrv         *grpc.Server
-	messageHandlers map[string]MessageHandler
+	handlers        map[string]Handler
 	acts            []Act
+	TaskScheduler   *TaskScheduler
+	ctx             context.Context
+	Cancel          context.CancelFunc
 }
 
 func NewAgent(name string, addr string) *Agent {
+	ctx, cancel := context.WithCancel(context.Background())
 	return &Agent{
 		name:            name,
 		Addr:            addr,
 		InMessageQueue:  make(chan Message),
 		OutMessageQueue: make(chan Message),
-		messageHandlers: make(map[string]MessageHandler),
+		handlers:        make(map[string]Handler),
 		acts:            make([]Act, 0),
+		TaskScheduler:   NewTaskScheduler(ctx),
+		ctx:             ctx,
+		Cancel:          cancel,
 	}
 }
 
@@ -105,6 +112,9 @@ func (a *Agent) ConsumeInMessages() {
 			a.DispatchMessage(message)
 			// Process the received message here
 			log.Printf("%s: Received message from %s: %s\n", a.name, message.Sender, message.Content)
+		case <-a.ctx.Done():
+			// Agent's context has been canceled, terminate the goroutine
+			return
 		}
 	}
 }
@@ -119,12 +129,15 @@ func (a *Agent) ConsumeOutMessages() {
 			a.doSendMessage(message)
 
 			time.Sleep(time.Millisecond * 100)
+		case <-a.ctx.Done():
+			// Agent's context has been canceled, terminate the goroutine
+			return
 		}
 	}
 }
 
 func (a *Agent) DispatchMessage(message Message) {
-	handler, exists := a.messageHandlers[message.Type]
+	handler, exists := a.handlers[message.Type]
 	if !exists {
 		log.Printf("No handler found for message type: %s", message.Type)
 		return
@@ -133,8 +146,8 @@ func (a *Agent) DispatchMessage(message Message) {
 	handler.HandleMessage(message)
 }
 
-func (a *Agent) RegisterHandler(messageType string, handler MessageHandler) {
-	a.messageHandlers[messageType] = handler
+func (a *Agent) RegisterHandler(messageType string, handler Handler) {
+	a.handlers[messageType] = handler
 }
 
 func (a *Agent) RegisterAct(act Act) {
@@ -152,14 +165,16 @@ func (a *Agent) PerformActs() {
 		// If act is periodic, create a ticker to control the interval
 		if interval > 0 {
 			ticker := time.NewTicker(interval)
-			go func(act Act) {
+			go func(act Act, ctx context.Context) {
 				for {
 					select {
 					case <-ticker.C:
 						act.Perform(a)
+					case <-ctx.Done():
+						return
 					}
 				}
-			}(act)
+			}(act, a.ctx)
 		} else {
 			// If act is not periodic, perform it immediately
 			act.Perform(a)
@@ -167,11 +182,12 @@ func (a *Agent) PerformActs() {
 	}
 }
 
-func (a *Agent) Run(ctx context.Context) {
+func (a *Agent) Run() {
 	// Start consuming messages
 	go a.ConsumeInMessages()
 	go a.ConsumeOutMessages()
 	go a.PerformActs()
+	go a.TaskScheduler.ExecuteTasks()
 	// Start the gRPC server.
 	a.grpcSrv = grpc.NewServer()
 	pb.RegisterMessageServiceServer(a.grpcSrv, &Server{Agent: a})
@@ -188,7 +204,7 @@ func (a *Agent) Run(ctx context.Context) {
 	}
 
 	select {
-	case <-ctx.Done():
+	case <-a.ctx.Done():
 		// Context has been canceled, stop the server gracefully
 		a.grpcSrv.Stop()
 	}

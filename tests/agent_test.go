@@ -1,12 +1,11 @@
 package tests_test
 
 import (
-	"context"
 	"log"
 	"testing"
 	"time"
 
-	"github.com/totoual/gAgents"
+	gAgents "github.com/totoual/gAgents/agent"
 )
 
 type GreetingHandler struct {
@@ -28,15 +27,14 @@ func (h *GreetingHandler) HandleMessage(message gAgents.Message) {
 func TestRunAgent(t *testing.T) {
 
 	agent := gAgents.NewAgent("test", "0.0.0.0:8000")
-	ctx, cancel := context.WithCancel(context.Background())
 
 	// Start the agent in a goroutine so it doesn't block
-	go agent.Run(ctx)
+	go agent.Run()
 
 	// ... Perform your test logic here
 
 	// Wait for the agent to stop (optional)
-	cancel()
+	agent.Cancel()
 
 }
 
@@ -52,12 +50,10 @@ func TestAgentCommunication(t *testing.T) {
 	agent2.RegisterHandler("greet", greetingHandler)
 
 	// Start Agent1 in a goroutine
-	ctx1, cancel1 := context.WithCancel(context.Background())
-	go agent1.Run(ctx1)
+	go agent1.Run()
 
 	// Start Agent2 in a goroutine
-	ctx2, cancel2 := context.WithCancel(context.Background())
-	go agent2.Run(ctx2)
+	go agent2.Run()
 
 	// Allow time for the servers to start
 	time.Sleep(time.Second)
@@ -75,6 +71,6 @@ func TestAgentCommunication(t *testing.T) {
 	// Add any assertions or checks here based on the expected behavior
 
 	// Cleanup and stop the agents
-	cancel1()
-	cancel2()
+	agent1.Cancel()
+	agent2.Cancel()
 }

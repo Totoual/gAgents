@@ -1,10 +1,9 @@
 package main
 
 import (
-	"context"
 	"log"
 
-	"github.com/totoual/gAgents"
+	gAgents "github.com/totoual/gAgents/agent"
 )
 
 type GreetingHandler struct {
@@ -26,8 +25,7 @@ func (h *GreetingHandler) HandleMessage(message gAgents.Message) {
 func main() {
 
 	a := gAgents.NewAgent("Test", "0.0.0.0:8002")
-	ctx := context.Background()
 	a.RegisterHandler("greet", &GreetingHandler{})
-	a.Run(ctx)
+	a.Run()
 
 }
