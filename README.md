@@ -1,9 +1,10 @@
 # gAgents: Micro Agent Framework
 
-gAgents is a micro-framework that provides a foundation for build agents in Go.
+gAgents is a micro-framework that provides a foundation for building agents in Go.
 To get started, follow this simple setps:
 
-## Installation
+### Installation
+Get started with gAgents by installing and configuring your Go env. Current go version is `1.20`
 
 1. Open your terminal and navigate to your Go project
 2. Use the `go get` command to install the framework:
@@ -15,7 +16,7 @@ go get github.com/totoual/gAgents
 This will download the main branch of the framework and add it to your project's
 dependencies.
 
-## Getting Started
+### Getting Started
 
 Now that you have the framework installed, you can start building agents. Here's a really basic example to help you get going:
 
@@ -63,8 +64,11 @@ func main(){
     // Allow time for message processing
 	time.Sleep(time.Second)
 
-    agent.Cancel()
-
-    
+    agent.Cancel()  
 }
+```
+Run this agent:
+
+```bash
+go run main.go
 ```
