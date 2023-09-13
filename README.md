@@ -4,7 +4,7 @@ gAgents is a micro-framework that provides a foundation for building agents in G
 To get started, follow this simple setps:
 
 ### Installation
-Get started with gAgents by installing and configuring your Go env. Current go version is `1.20`
+Get started by installing and configuring your Go env. Current go version is `1.20`
 
 1. Open your terminal and navigate to your Go project
 2. Use the `go get` command to install the framework:
