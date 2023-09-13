@@ -10,7 +10,7 @@ Get started by installing and configuring your Go env. Current go version is `1.
 2. Use the `go get` command to install the framework:
 
 ```bash
-go get github.com/totoual/gAgents
+go get github.com/totoual/gAgents/agent
 ```
 
 This will download the main branch of the framework and add it to your project's
