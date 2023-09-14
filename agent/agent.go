@@ -1,6 +1,7 @@
 package gAgents
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net"
@@ -14,11 +15,39 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-type Message struct {
+type Envelope struct {
 	Receiver string
 	Sender   string
 	Type     string
-	Content  []byte
+	Message  []byte
+}
+
+func NewEnvelope(m Message) *Envelope {
+	sm, err := m.Serialize()
+	if err != nil {
+		log.Panic("Cannot serialise this message!")
+	}
+	return &Envelope{
+		Sender:   m.GetSender(),
+		Receiver: m.GetReceiver(),
+		Type:     m.GetType(),
+		Message:  sm,
+	}
+}
+
+func (e Envelope) ToMessage(m Message) (Message, error) {
+	err := json.Unmarshal(e.Message, &m)
+	if err != nil {
+		return nil, fmt.Errorf("error deserializing message: %v", err)
+	}
+	return m, nil
+}
+
+type Message interface {
+	GetType() string
+	GetReceiver() string
+	GetSender() string
+	Serialize() ([]byte, error)
 }
 
 type Server struct {
@@ -27,7 +56,7 @@ type Server struct {
 }
 
 type Handler interface {
-	HandleMessage(message Message)
+	HandleMessage(envelope Envelope)
 }
 
 type Act interface {
@@ -38,8 +67,8 @@ type Act interface {
 type Agent struct {
 	name            string
 	Addr            string
-	InMessageQueue  chan Message
-	OutMessageQueue chan Message
+	InMessageQueue  chan Envelope
+	OutMessageQueue chan Envelope
 	grpcSrv         *grpc.Server
 	handlers        map[string]Handler
 	acts            []Act
@@ -53,8 +82,8 @@ func NewAgent(name string, addr string) *Agent {
 	return &Agent{
 		name:            name,
 		Addr:            addr,
-		InMessageQueue:  make(chan Message),
-		OutMessageQueue: make(chan Message),
+		InMessageQueue:  make(chan Envelope),
+		OutMessageQueue: make(chan Envelope),
 		handlers:        make(map[string]Handler),
 		acts:            make([]Act, 0),
 		TaskScheduler:   NewTaskScheduler(ctx),
@@ -63,10 +92,9 @@ func NewAgent(name string, addr string) *Agent {
 	}
 }
 
-func (a *Agent) doSendMessage(m Message) (*pb.MessageResponse, error) {
-	log.Printf("Sending the message to %v", m.Receiver)
-	log.Printf("The content is: %v", m.Content)
-	conn, err := grpc.Dial(m.Receiver, grpc.WithTransportCredentials(insecure.NewCredentials()))
+func (a *Agent) doSendEnvelope(e Envelope) (*pb.MessageResponse, error) {
+	log.Printf("Sending the message to %v", e.Receiver)
+	conn, err := grpc.Dial(e.Receiver, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect: %v", err)
 	}
@@ -78,10 +106,10 @@ func (a *Agent) doSendMessage(m Message) (*pb.MessageResponse, error) {
 	// Send the message via gRPC
 	response, err := client.SendMessage(ctx, &pb.MessageRequest{
 		Sender:   a.Addr,
-		Receiver: m.Receiver,
-		Content:  m.Content,
+		Receiver: e.Receiver,
+		Message:  e.Message,
 		Uuid:     uuid.New().String(),
-		Type:     m.Type,
+		Type:     e.Type,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("error sending message: %v", err)
@@ -93,13 +121,13 @@ func (a *Agent) doSendMessage(m Message) (*pb.MessageResponse, error) {
 func (s *Server) SendMessage(ctx context.Context, in *pb.MessageRequest) (*pb.MessageResponse, error) {
 	log.Printf("SendMessage function was invoked with %v\n", in)
 
-	message := Message{
+	envelope := Envelope{
 		Sender:  in.Sender,
-		Content: in.Content,
+		Message: in.Message,
 		Type:    in.Type,
 	}
-	s.Agent.InMessageQueue <- message
-	log.Printf("Added a new message in the InMessageQueue: %v", message)
+	s.Agent.InMessageQueue <- envelope
+	log.Printf("Added a new message in the InMessageQueue")
 	return &pb.MessageResponse{
 		Status: "OK",
 	}, nil
@@ -108,10 +136,10 @@ func (s *Server) SendMessage(ctx context.Context, in *pb.MessageRequest) (*pb.Me
 func (a *Agent) ConsumeInMessages() {
 	for {
 		select {
-		case message := <-a.InMessageQueue:
-			a.DispatchMessage(message)
+		case envelope := <-a.InMessageQueue:
+			a.DispatchMessage(envelope)
 			// Process the received message here
-			log.Printf("%s: Received message from %s: %s\n", a.name, message.Sender, message.Content)
+			log.Printf("%s: Received message from %s\n", a.name, envelope.Sender)
 		case <-a.ctx.Done():
 			// Agent's context has been canceled, terminate the goroutine
 			return
@@ -124,9 +152,9 @@ func (a *Agent) ConsumeOutMessages() {
 		log.Printf("Consuming messages")
 		log.Printf("%v", len(a.OutMessageQueue))
 		select {
-		case message := <-a.OutMessageQueue:
-			log.Printf("Consuming message: %v", message)
-			a.doSendMessage(message)
+		case envelope := <-a.OutMessageQueue:
+			log.Printf("Consuming message: %v", envelope)
+			a.doSendEnvelope(envelope)
 
 			time.Sleep(time.Millisecond * 100)
 		case <-a.ctx.Done():
@@ -136,14 +164,14 @@ func (a *Agent) ConsumeOutMessages() {
 	}
 }
 
-func (a *Agent) DispatchMessage(message Message) {
-	handler, exists := a.handlers[message.Type]
+func (a *Agent) DispatchMessage(envelope Envelope) {
+	handler, exists := a.handlers[envelope.Type]
 	if !exists {
-		log.Printf("No handler found for message type: %s", message.Type)
+		log.Printf("No handler found for message type: %s", envelope.Type)
 		return
 	}
 
-	handler.HandleMessage(message)
+	handler.HandleMessage(envelope)
 }
 
 func (a *Agent) RegisterHandler(messageType string, handler Handler) {
