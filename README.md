@@ -129,3 +129,7 @@ Run this agent:
 ```bash
 go run main.go
 ```
+
+## Messaging System
+
+Learn more about the messaging system in [messages.md](./doc/messages.md).
