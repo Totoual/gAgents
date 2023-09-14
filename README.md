@@ -1,72 +1,129 @@
 # gAgents: Micro Agent Framework
 
 gAgents is a micro-framework that provides a foundation for building agents in Go.
-To get started, follow this simple setps:
+To get started, follow these simple steps:
 
-### Installation
-Get started by installing and configuring your Go env. Current go version is `1.20`
+## Installation
 
-1. Open your terminal and navigate to your Go project
+Get started by installing and configuring your Go environment. The current Go version is `1.20`.
+
+1. Open your terminal and navigate to your Go project.
 2. Use the `go get` command to install the framework:
 
 ```bash
 go get github.com/totoual/gAgents/agent
 ```
 
-This will download the main branch of the framework and add it to your project's
-dependencies.
+This will download the main branch of the framework and add it to your project's dependencies.
 
-### Getting Started
+## Getting Started
 
-Now that you have the framework installed, you can start building agents. Here's a really basic example to help you get going:
+Now that you have the framework installed, you can start building agents. Here's a basic example to help you get going:
+
+### Creating a Message Struct
+
+Firstly, you need to create a message struct. Create a file called `protocol.go`:
 
 ```go
-package main
+package protocol
 
-import(
-    gAgents "github.com/totoual/gAgents/agent"
+import (
+	"encoding/json"
+	"fmt"
+	"log"
+
+	gAgents "github.com/totoual/gAgents/agent"
 )
+
+type TestMessage struct {
+	Receiver string `json:"receiver"`
+	Sender   string `json:"sender"`
+	Type     string `json:"type"`
+	Greeting string `json:"greeting"`
+}
+
+func (t TestMessage) GetReceiver() string {
+	return t.Receiver
+}
+func (t TestMessage) GetSender() string {
+	return t.Sender
+}
+func (t TestMessage) GetType() string {
+	return t.Type
+}
+
+func (t TestMessage) Serialize() ([]byte, error) {
+	return json.Marshal(t)
+}
 
 type GreetingHandler struct {
 	// You can include any necessary properties for the handler here
 }
 
-func (h *GreetingHandler) HandleMessage(message gAgents.Message) {
+func (h *GreetingHandler) HandleMessage(envelope gAgents.Envelope) {
+	m, err := envelope.ToMessage(&TestMessage{})
+	message, ok := m.(*TestMessage)
+	if !ok {
+		fmt.Errorf("expected a CustomMessage")
+	}
+	if err != nil {
+		fmt.Println("Error deserializing message:", err)
+	}
 	// Implement the handling logic for greeting messages here
 	if message.Type == "greet" {
 		// Assuming the greeting message format is "Hello, {Receiver}!"
-		log.Printf("Received greeting: %s\n", message.Content)
+		log.Printf("Received greeting: %s\n", message.Greeting)
 
 		// Send a response back to the sender
 	} else {
 		log.Printf("Unsupported message type: %s\n", message.Type)
 	}
 }
+```
 
+### Setting up the Agent
 
-func main(){
-    // Create a new agent
-    agent := gAgents.NewAgent("Alice", "localhost:8000")
+In your `agent.go` file:
 
-    greetingHandler := &GreetingHandler{}
-    // Here you can register acts, handlers and tasks
-    agent.RegisterHandler("greet", greetingHandler)
+```go
+package main
 
-    // Run the agent.
-    go agent.Run() // Need to run the agent in a different routine so we can send a message for the example:
+import (
+	"time"
 
-    agent.OutMessageQueue <- gAgents.Message{
-		Receiver: agent.Addr,
+	gAgents "github.com/totoual/gAgents/agent"
+	"github.com/totoual/gAgents/examples/simple_agent/protocol"
+)
+
+func main() {
+	// Create a new agent
+	agent := gAgents.NewAgent("Alice", "localhost:8000")
+
+	// Register handlers and other components
+	agent.RegisterHandler("greet", &protocol.GreetingHandler{})
+
+	// Run the agent
+	go agent.Run()
+
+	// Sending a message example
+	message := protocol.TestMessage{
+		Receiver: "0.0.0.0:8002",
+		Sender:   "0.0.0.0:8003",
 		Type:     "greet",
-		Content:  []byte("Hello!"),
+		Greeting: "Hello!",
 	}
-    
-    // Allow time for message processing
+
+	// Send a message
+	agent.OutMessageQueue <- *gAgents.NewEnvelope(message)
+
+	// Allow time for message processing
 	time.Sleep(time.Second)
 
-    agent.Cancel()  
+	// Cancel the agent when done
+	agent.Cancel()
 }
 ```
+
 Run this agent:
 
 ```bash
