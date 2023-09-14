@@ -132,4 +132,4 @@ go run main.go
 
 ## Messaging System
 
-Learn more about the messaging system in [messages.md](./doc/messages.md).
+Learn more about the messaging system in [messages.md](./docs/messages.md).
