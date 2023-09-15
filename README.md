@@ -132,8 +132,7 @@ go run main.go
 
 ## Messaging System
 
-Learn more about the messaging system in [message.md](./docs/message
-.md).
+Learn more about the messaging system in [message.md](./docs/message.md).
 
 ## Task Scheduler
 
