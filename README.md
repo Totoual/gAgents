@@ -11,7 +11,7 @@ Get started by installing and configuring your Go environment. The current Go ve
 2. Use the `go get` command to install the framework:
 
 ```bash
-go get github.com/totoual/gAgents/agent
+go get github.com/totoual/gAgents
 ```
 
 This will download the main branch of the framework and add it to your project's dependencies.
