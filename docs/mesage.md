@@ -4,7 +4,7 @@ The messaging system in the `gAgents` framework enables communication between ag
 
 Here's how it works:
 
-1. **Message Struct and Envelope**: In the framework, we define a `Message` struct which serves as the core structure for communication. This struct contains essential fields like `Receiver`, `Sender`, `Type`, and `Content` which allow agents to specify the sender, receiver, message type, and content.
+1. **Message Struct and Envelope**: In the framework, we define a `Message` struct which serves as the core structure for communication. This struct contains essential fields like `Receiver`, `Sender`, `Protocol`, and `Content` which allow agents to specify the sender, receiver, message type, and content.
 
 2. **Message Serialization**: To send messages over gRPC, we need to serialize them into a format that can be transmitted over the network. We use JSON serialization to convert the `Message` struct into a byte array.
 

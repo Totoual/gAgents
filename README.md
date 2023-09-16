@@ -38,7 +38,7 @@ import (
 type TestMessage struct {
 	Receiver string `json:"receiver"`
 	Sender   string `json:"sender"`
-	Type     string `json:"type"`
+	Protocol string `json:"protocol"`
 	Greeting string `json:"greeting"`
 }
 
@@ -48,8 +48,8 @@ func (t TestMessage) GetReceiver() string {
 func (t TestMessage) GetSender() string {
 	return t.Sender
 }
-func (t TestMessage) GetType() string {
-	return t.Type
+func (t TestMessage) GetProtocol() string {
+	return t.Protocol
 }
 
 func (t TestMessage) Serialize() ([]byte, error) {
@@ -70,13 +70,13 @@ func (h *GreetingHandler) HandleMessage(envelope gAgents.Envelope) {
 		fmt.Println("Error deserializing message:", err)
 	}
 	// Implement the handling logic for greeting messages here
-	if message.Type == "greet" {
+	if message.Protocol == "greet" {
 		// Assuming the greeting message format is "Hello, {Receiver}!"
 		log.Printf("Received greeting: %s\n", message.Greeting)
 
 		// Send a response back to the sender
 	} else {
-		log.Printf("Unsupported message type: %s\n", message.Type)
+		log.Printf("Unsupported message type: %s\n", message.Protocol)
 	}
 }
 ```
@@ -99,17 +99,16 @@ func main() {
 	// Create a new agent
 	agent := gAgents.NewAgent("Alice", "localhost:8000")
 
-	// Register handlers and other components
+	// Here you can register acts, handlers and tasks
 	agent.RegisterHandler("greet", &protocol.GreetingHandler{})
 
-	// Run the agent
-	go agent.Run()
+	// Run the agent.
+	go agent.Run() // Need to run the agent in a different routine so we can send a message for the example:
 
-	// Sending a message example
 	message := protocol.TestMessage{
 		Receiver: "0.0.0.0:8002",
 		Sender:   "0.0.0.0:8003",
-		Type:     "greet",
+		Protocol: "greet",
 		Greeting: "Hello!",
 	}
 
@@ -119,7 +118,6 @@ func main() {
 	// Allow time for message processing
 	time.Sleep(time.Second)
 
-	// Cancel the agent when done
 	agent.Cancel()
 }
 ```

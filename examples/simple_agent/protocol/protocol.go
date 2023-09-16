@@ -11,7 +11,7 @@ import (
 type TestMessage struct {
 	Receiver string `json:"receiver"`
 	Sender   string `json:"sender"`
-	Protocol string `json:"type"`
+	Protocol string `json:"protocol"`
 	Greeting string `json:"greeting"`
 }
 
