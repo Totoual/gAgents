@@ -20,7 +20,7 @@ func main() {
 	message := protocol.TestMessage{
 		Receiver: "0.0.0.0:8002",
 		Sender:   "0.0.0.0:8003",
-		Type:     "greet",
+		Protocol: "greet",
 		Greeting: "Hello!",
 	}
 

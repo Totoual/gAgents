@@ -13,7 +13,7 @@ import (
 type TestMessage struct {
 	Receiver string `json:"receiver"`
 	Sender   string `json:"sender"`
-	Type     string `json:"type"`
+	Protocol string `json:"type"`
 	Greeting string `json:"greeting"`
 }
 
@@ -23,8 +23,8 @@ func (t TestMessage) GetReceiver() string {
 func (t TestMessage) GetSender() string {
 	return t.Sender
 }
-func (t TestMessage) GetType() string {
-	return t.Type
+func (t TestMessage) GetProtocol() string {
+	return t.Protocol
 }
 
 func (t TestMessage) Serialize() ([]byte, error) {
@@ -46,13 +46,13 @@ func (h *GreetingHandler) HandleMessage(envelope gAgents.Envelope) {
 	}
 
 	// Implement the handling logic for greeting messages here
-	if message.Type == "greet" {
+	if message.Protocol == "greet" {
 		// Assuming the greeting message format is "Hello, {Receiver}!"
 		log.Printf("Received greeting: %s\n", message.Greeting)
 
 		// Send a response back to the sender
 	} else {
-		log.Printf("Unsupported message type: %s\n", message.Type)
+		log.Printf("Unsupported message type: %s\n", message.Protocol)
 	}
 }
 
@@ -93,7 +93,7 @@ func TestAgentCommunication(t *testing.T) {
 	message := TestMessage{
 		Receiver: agent2.Addr,
 		Sender:   agent1.Addr,
-		Type:     "greet",
+		Protocol: "greet",
 		Greeting: "Hello!",
 	}
 	// Simulate sending a message from Agent1 to Agent2

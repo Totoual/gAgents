@@ -8,7 +8,7 @@ message MessageRequest {
     string sender = 1;
     string receiver = 2;
     bytes message = 3;
-    string type = 4;
+    string protocol = 4;
     string uuid = 5;
 }
 

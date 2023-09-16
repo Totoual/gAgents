@@ -18,7 +18,7 @@ import (
 type Envelope struct {
 	Receiver string
 	Sender   string
-	Type     string
+	Protocol string
 	Message  []byte
 }
 
@@ -30,7 +30,7 @@ func NewEnvelope(m Message) *Envelope {
 	return &Envelope{
 		Sender:   m.GetSender(),
 		Receiver: m.GetReceiver(),
-		Type:     m.GetType(),
+		Protocol: m.GetProtocol(),
 		Message:  sm,
 	}
 }
@@ -44,7 +44,7 @@ func (e Envelope) ToMessage(m Message) (Message, error) {
 }
 
 type Message interface {
-	GetType() string
+	GetProtocol() string
 	GetReceiver() string
 	GetSender() string
 	Serialize() ([]byte, error)
@@ -109,7 +109,7 @@ func (a *Agent) doSendEnvelope(e Envelope) (*pb.MessageResponse, error) {
 		Receiver: e.Receiver,
 		Message:  e.Message,
 		Uuid:     uuid.New().String(),
-		Type:     e.Type,
+		Protocol: e.Protocol,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("error sending message: %v", err)
@@ -122,9 +122,9 @@ func (s *Server) SendMessage(ctx context.Context, in *pb.MessageRequest) (*pb.Me
 	log.Printf("SendMessage function was invoked with %v\n", in)
 
 	envelope := Envelope{
-		Sender:  in.Sender,
-		Message: in.Message,
-		Type:    in.Type,
+		Sender:   in.Sender,
+		Message:  in.Message,
+		Protocol: in.Protocol,
 	}
 	s.Agent.InMessageQueue <- envelope
 	log.Printf("Added a new message in the InMessageQueue")
@@ -165,9 +165,9 @@ func (a *Agent) ConsumeOutMessages() {
 }
 
 func (a *Agent) DispatchMessage(envelope Envelope) {
-	handler, exists := a.handlers[envelope.Type]
+	handler, exists := a.handlers[envelope.Protocol]
 	if !exists {
-		log.Printf("No handler found for message type: %s", envelope.Type)
+		log.Printf("No handler found for message type: %s", envelope.Protocol)
 		return
 	}
 
