@@ -64,6 +64,10 @@ type Act interface {
 	GetInterval() time.Duration
 }
 
+type BusinessLogic interface {
+	Apply() Message
+}
+
 type Agent struct {
 	name            string
 	Addr            string
@@ -72,6 +76,7 @@ type Agent struct {
 	grpcSrv         *grpc.Server
 	handlers        map[string]Handler
 	acts            []Act
+	businessLogic   map[string]BusinessLogic
 	TaskScheduler   *TaskScheduler
 	ctx             context.Context
 	Cancel          context.CancelFunc
@@ -86,6 +91,7 @@ func NewAgent(name string, addr string) *Agent {
 		OutMessageQueue: make(chan Envelope),
 		handlers:        make(map[string]Handler),
 		acts:            make([]Act, 0),
+		businessLogic:   make(map[string]BusinessLogic),
 		TaskScheduler:   NewTaskScheduler(ctx),
 		ctx:             ctx,
 		Cancel:          cancel,
@@ -180,6 +186,10 @@ func (a *Agent) RegisterHandler(messageType string, handler Handler) {
 
 func (a *Agent) RegisterAct(act Act) {
 	a.acts = append(a.acts, act)
+}
+
+func (a *Agent) RegisterBusinessLogic(messageType string, logic BusinessLogic) {
+	a.businessLogic[messageType] = logic
 }
 
 func (a *Agent) PerformActs() {
