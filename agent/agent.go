@@ -65,10 +65,6 @@ type Act interface {
 	GetInterval() time.Duration
 }
 
-type BusinessLogic interface {
-	Apply() Message
-}
-
 type Agent struct {
 	name            string
 	Addr            string
