@@ -151,10 +151,8 @@ func (a *Agent) ConsumeInMessages() {
 func (a *Agent) ConsumeOutMessages() {
 	for {
 		log.Printf("Consuming messages")
-		log.Printf("%v", len(a.OutMessageQueue))
 		select {
 		case envelope := <-a.OutMessageQueue:
-			log.Printf("Consuming message: %v", envelope)
 			a.doSendEnvelope(envelope)
 
 			time.Sleep(time.Millisecond * 100)
