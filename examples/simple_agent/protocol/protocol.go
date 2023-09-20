@@ -29,6 +29,10 @@ func (t TestMessage) Serialize() ([]byte, error) {
 	return json.Marshal(t)
 }
 
+func (t TestMessage) GetPerformative() int {
+	return 0
+}
+
 type GreetingHandler struct {
 	// You can include any necessary properties for the handler here
 }

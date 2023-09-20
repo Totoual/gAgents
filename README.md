@@ -52,6 +52,10 @@ func (t TestMessage) GetProtocol() string {
 	return t.Protocol
 }
 
+func (t TestMessage) GetPerformative() int{
+    return 0
+}
+
 func (t TestMessage) Serialize() ([]byte, error) {
 	return json.Marshal(t)
 }
