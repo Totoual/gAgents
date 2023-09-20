@@ -45,6 +45,7 @@ func (e Envelope) ToMessage(m Message) (Message, error) {
 
 type Message interface {
 	GetProtocol() string
+	GetPerformative() int
 	GetReceiver() string
 	GetSender() string
 	Serialize() ([]byte, error)
