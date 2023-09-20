@@ -38,7 +38,7 @@ Handlers are components that process incoming messages based on their performati
 package main
 
 import (
-    "github.com/totoual/gAgents-cases/s-commerce/protocol"
+    "github.com/totoual/gAgents/examples/s-commerce/protocol"
     gAgents "github.com/totoual/gAgents/agent"
 )
 
