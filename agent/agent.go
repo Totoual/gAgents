@@ -76,7 +76,7 @@ type Agent struct {
 	grpcSrv         *grpc.Server
 	handlers        map[string]Handler
 	acts            []Act
-	businessLogic   map[string]BusinessLogic
+	BusinessLogic   map[string]BusinessLogic
 	TaskScheduler   *TaskScheduler
 	ctx             context.Context
 	Cancel          context.CancelFunc
@@ -91,7 +91,7 @@ func NewAgent(name string, addr string) *Agent {
 		OutMessageQueue: make(chan Envelope),
 		handlers:        make(map[string]Handler),
 		acts:            make([]Act, 0),
-		businessLogic:   make(map[string]BusinessLogic),
+		BusinessLogic:   make(map[string]BusinessLogic),
 		TaskScheduler:   NewTaskScheduler(ctx),
 		ctx:             ctx,
 		Cancel:          cancel,
@@ -189,7 +189,7 @@ func (a *Agent) RegisterAct(act Act) {
 }
 
 func (a *Agent) RegisterBusinessLogic(messageType string, logic BusinessLogic) {
-	a.businessLogic[messageType] = logic
+	a.BusinessLogic[messageType] = logic
 }
 
 func (a *Agent) PerformActs() {
