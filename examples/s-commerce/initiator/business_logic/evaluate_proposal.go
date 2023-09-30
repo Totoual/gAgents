@@ -19,7 +19,8 @@ func (d *EvaluateProposoal) Apply(m gAgents.Message) gAgents.Message {
 
 	if message.Content.Price <= 35.0 {
 		fmt.Println(message)
-		response_message = protocol.AcceptanceMessage{
+
+		header := protocol.MessageHeader{
 			Protocol:       "Accept Negotiation",
 			Performative:   protocol.ACCEPT,
 			ConversationID: message.ConversationID,
@@ -28,14 +29,23 @@ func (d *EvaluateProposoal) Apply(m gAgents.Message) gAgents.Message {
 			Sender:         message.Receiver,
 		}
 
+		response_message = &protocol.AcceptanceMessage{
+			MessageHeader: header,
+		}
+
 	} else {
-		response_message = protocol.RejectionMessage{
+
+		header := protocol.MessageHeader{
 			Protocol:       "Reject Negotiation",
 			Performative:   protocol.REJECT,
 			ConversationID: message.ConversationID,
 			InReplyWith:    message.InReplyWith,
 			Receiver:       message.Sender,
 			Sender:         message.Receiver,
+		}
+
+		response_message = &protocol.RejectionMessage{
+			MessageHeader: header,
 		}
 	}
 
