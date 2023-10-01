@@ -7,9 +7,7 @@ import (
 
 type Task interface {
 	ID() string
-	Type() string
 	ScheduledAt() time.Time
-	Parameters() map[string]interface{}
 	Execute()
 	Interval() time.Duration // Return 0 if the task is not recurring
 	StopCondition() bool     // Return true if the task should stop

@@ -1,0 +1,23 @@
+// messages.proto
+syntax = "proto3";
+package email;
+option go_package= "github.com/totoual/gAgents/examples/email_task/proto";
+
+message EmailTask {
+
+    string sender = 1;
+    string receiver = 2;
+    string subject = 3;
+    string body = 4;
+    string schedule_at = 5;
+    int32 interval = 6;
+}
+
+message EmailTaskResponse {
+    string task_id = 1;
+    string message = 2;
+}
+
+service EmailService {
+    rpc CreateEmailTask (EmailTask) returns (EmailTaskResponse);
+}

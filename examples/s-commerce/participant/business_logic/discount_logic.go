@@ -20,7 +20,7 @@ func (d *DiscountLogic) Apply(m gAgents.Message) gAgents.Message {
 	var reply_message gAgents.Message
 
 	if float64(message.Content.MaxPrice) < total {
-		reply_message := protocol.RejectionMessage{
+		reply_message = &protocol.RejectionMessage{
 			MessageHeader: protocol.MessageHeader{
 				Protocol:       "Reject Negotiation",
 				Performative:   protocol.REJECT,
@@ -30,7 +30,6 @@ func (d *DiscountLogic) Apply(m gAgents.Message) gAgents.Message {
 				Sender:         message.Receiver,
 			},
 		}
-		return reply_message
 	} else {
 		fmt.Printf("Total price is %f\n", total)
 		proposal := protocol.ProposalContent{
@@ -38,7 +37,7 @@ func (d *DiscountLogic) Apply(m gAgents.Message) gAgents.Message {
 			Price: total - total*0.01,
 		}
 
-		reply_message := protocol.ProposalResponse{
+		reply_message = &protocol.ProposalResponse{
 			MessageHeader: protocol.MessageHeader{
 				Protocol:       "Proposal Negotiation",
 				Performative:   protocol.PROPOSAL,

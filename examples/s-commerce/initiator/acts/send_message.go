@@ -10,27 +10,47 @@ import (
 
 type SendMessageAct struct{}
 
-func (a *SendMessageAct) Perform(agent *gAgents.Agent) {
-	message := protocol.CFPRequest{
+const (
+	ProtocolName    = "CFP Negotiation"
+	DefaultReceiver = "127.0.0.1:8001"
+)
 
-		Protocol:       "CFP Negotiation",
+// Helper function to generate a new UUID string
+func newUUID() string {
+	return uuid.NewString()
+}
+
+// Helper function to create a new item
+func newItem(amount int, price float64) protocol.Item {
+	return protocol.Item{
+		SKU:    newUUID(),
+		Amount: amount,
+		Price:  price,
+	}
+}
+
+func (a *SendMessageAct) Perform(agent *gAgents.Agent) {
+	header := protocol.MessageHeader{
+		Protocol:       ProtocolName,
 		Performative:   protocol.CFP,
-		ConversationID: uuid.NewString(),
-		ReplyWith:      uuid.NewString(),
-		Content: protocol.CFPContent{
-			Order: protocol.Order{
-				Items: []protocol.Item{
-					{
-						SKU:    uuid.NewString(),
-						Amount: 5,
-						Price:  2.5,
-					},
-				},
+		ConversationID: newUUID(),
+		ReplyWith:      newUUID(),
+		Receiver:       DefaultReceiver,
+		Sender:         agent.Addr,
+	}
+
+	content := protocol.CFPContent{
+		Order: protocol.Order{
+			Items: []protocol.Item{
+				newItem(5, 2.5),
 			},
-			MaxPrice: 35,
 		},
-		Receiver: "127.0.0.1:8001",
-		Sender:   agent.Addr,
+		MaxPrice: 35,
+	}
+
+	message := &protocol.CFPRequest{
+		MessageHeader: header,
+		Content:       content,
 	}
 
 	agent.OutMessageQueue <- *gAgents.NewEnvelope(message)
