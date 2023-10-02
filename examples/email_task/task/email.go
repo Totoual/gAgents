@@ -47,10 +47,6 @@ func (t *EmailTask) ID() string {
 	return t.id
 }
 
-func (t *EmailTask) Type() string {
-	return "example"
-}
-
 func (t *EmailTask) ScheduledAt() time.Time {
 	return t.scheduledAt
 }

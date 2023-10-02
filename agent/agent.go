@@ -65,6 +65,10 @@ type Act interface {
 	GetInterval() time.Duration
 }
 
+type Service interface {
+	Init(srv *grpc.Server)
+}
+
 type Agent struct {
 	name            string
 	Addr            string
@@ -72,6 +76,7 @@ type Agent struct {
 	OutMessageQueue chan Envelope
 	grpcSrv         *grpc.Server
 	handlers        map[string]Handler
+	services        []Service
 	acts            []Act
 	TaskScheduler   *TaskScheduler
 	ctx             context.Context
@@ -86,6 +91,7 @@ func NewAgent(name string, addr string) *Agent {
 		InMessageQueue:  make(chan Envelope),
 		OutMessageQueue: make(chan Envelope),
 		handlers:        make(map[string]Handler),
+		services:        make([]Service, 0),
 		acts:            make([]Act, 0),
 		TaskScheduler:   NewTaskScheduler(ctx),
 		ctx:             ctx,
@@ -177,6 +183,10 @@ func (a *Agent) RegisterHandler(messageType string, handler Handler) {
 	a.handlers[messageType] = handler
 }
 
+func (a *Agent) RegisterService(service Service) {
+	a.services = append(a.services, service)
+}
+
 func (a *Agent) RegisterAct(act Act) {
 	a.acts = append(a.acts, act)
 }
@@ -218,6 +228,11 @@ func (a *Agent) Run() {
 	// Start the gRPC server.
 	a.grpcSrv = grpc.NewServer()
 	pb.RegisterMessageServiceServer(a.grpcSrv, &Server{Agent: a})
+
+	for _, service := range a.services {
+		service.Init(a.grpcSrv)
+	}
+
 	lis, err := net.Listen("tcp", a.Addr)
 
 	if err != nil {
