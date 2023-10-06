@@ -2,6 +2,8 @@ package task
 
 import (
 	"context"
+	"log"
+	"time"
 
 	gAgents "github.com/totoual/gAgents/agent"
 	pb "github.com/totoual/gAgents/examples/email_task/generated"
@@ -34,10 +36,10 @@ func (es *EmailService) CreateEmailTask(ctx context.Context, req *pb.EmailTask) 
 		req.Subject,
 		req.Body,
 	)
-
+	log.Println(time.Now())
 	// Add the task to the TaskScheduler.
 	es.Scheduler.AddTask(emailTask)
-
+	log.Printf("Added a task in the list!")
 	return &pb.EmailTaskResponse{
 		TaskId:  emailTask.ID(),
 		Message: "Email task successfully created.",
