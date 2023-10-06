@@ -1,6 +1,6 @@
 # gAgents: Micro Agent Framework
 
-gAgents is a micro-framework that provides a foundation for building agents in Go.
+gAgents is a micro-framework that provides a foundation for building task-oriented agents in Go.
 To get started, follow these simple steps:
 
 ## Installation

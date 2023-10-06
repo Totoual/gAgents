@@ -2,14 +2,13 @@ package gAgents
 
 import (
 	"context"
+	"log"
 	"time"
 )
 
 type Task interface {
 	ID() string
-	Type() string
 	ScheduledAt() time.Time
-	Parameters() map[string]interface{}
 	Execute()
 	Interval() time.Duration // Return 0 if the task is not recurring
 	StopCondition() bool     // Return true if the task should stop
@@ -37,23 +36,39 @@ func (ts *TaskScheduler) RemoveTask(taskID string) {
 }
 
 func (ts *TaskScheduler) ExecuteTasks() {
-	currentTime := time.Now()
+	ticker := time.NewTicker(time.Second * 10) // check every 10 seconds, adjust as needed
+	defer ticker.Stop()
 
-	for taskID, task := range ts.Tasks {
-		if task.ScheduledAt().Before(currentTime) {
-			// Execute the task
-			task.Execute()
+	for {
+		select {
+		case <-ticker.C:
+			currentTime := time.Now().UTC()
 
-			// Check if the task has a recurrence interval
-			interval := task.Interval()
-			if interval > 0 {
-				// Schedule the next execution
-				taskID := task.ID()
-				nextExecution := currentTime.Add(interval)
-				ts.Tasks[taskID] = task.RescheduleTaskAt(nextExecution)
-			} else if task.StopCondition() {
-				// If the task meets its stop condition, remove it from the scheduler
-				ts.RemoveTask(taskID)
+			for taskID, task := range ts.Tasks {
+				log.Printf(currentTime.String())
+				log.Printf(task.ScheduledAt().String())
+				if task.ScheduledAt().Before(currentTime) || task.ScheduledAt().Equal(currentTime) {
+					// Execute the task
+					log.Printf("Executing the task!")
+					task.Execute()
+
+					if task.Interval() == 0 {
+						ts.RemoveTask(taskID)
+						continue
+					}
+
+					// Check if the task has a recurrence interval
+					interval := task.Interval()
+					if interval > 0 {
+						// Schedule the next execution
+						taskID := task.ID()
+						nextExecution := currentTime.Add(interval)
+						ts.Tasks[taskID] = task.RescheduleTaskAt(nextExecution)
+					} else if task.StopCondition() {
+						// If the task meets its stop condition, remove it from the scheduler
+						ts.RemoveTask(taskID)
+					}
+				}
 			}
 		}
 	}
