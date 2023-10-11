@@ -1,0 +1,77 @@
+syntax = "proto3";
+package gAgentsRegistry;
+option go_package= "github.com/totoual/gAgents/registry/proto";
+
+// Define messages for each of the complex data points
+
+message Location {
+    double latitude = 1;
+    double longitude = 2;
+    // Optionally, you can also add:
+    // string city = 3;
+    // string country = 4;
+    // or other relevant location details
+}
+
+
+message Metadata {
+    string software_version = 1;
+    Location location = 2;
+    string region = 3;
+    string organization = 4;
+    // Add more fields as needed
+}
+
+message Status {
+    enum AgentStatus {
+        ACTIVE = 0;
+        INACTIVE = 1;
+        BUSY = 2;
+        // Add more status types if needed
+    }
+    AgentStatus current_status = 1;
+    // You can add other related fields here, like "last_checked_in" timestamp
+}
+
+message Authentication {
+    string token = 1; // For simplicity. In reality, security considerations might demand a different structure or method.
+    string public_key = 2;
+    // Add other fields like permissions, scopes, etc.
+}
+
+message ContactInformation {
+    string email = 1;
+    string secondary_channel = 2;
+    // Add more fields as necessary
+}
+
+
+// Main Agent registration message
+
+message AgentRegistration {
+    string unique_id = 1; // UUID or any unique string
+    string grpc_address = 2; // Including port e.g., "localhost:50051"
+    string agent_type = 3; // Agent's role or type
+
+    repeated string capabilities = 4; // List of services or capabilities
+
+    Metadata metadata = 5;
+    Status status = 6;
+    Authentication auth_data = 7;
+    ContactInformation contact_info = 8;
+
+    repeated string tags = 10; // Simple list of tags/labels
+
+}
+
+
+// Service definition for the registry.
+service AgentRegistry {
+    rpc RegisterAgent(AgentRegistration) returns (RegistrationResponse);
+    // ... other RPC methods, like unregister, update, etc.
+}
+
+message RegistrationResponse {
+    bool success = 1;
+    string message = 2; // Feedback message on the outcome of the registration.
+}

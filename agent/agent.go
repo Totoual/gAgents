@@ -13,6 +13,7 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/reflection"
 )
 
 type Envelope struct {
@@ -227,6 +228,7 @@ func (a *Agent) Run() {
 	go a.TaskScheduler.ExecuteTasks()
 	// Start the gRPC server.
 	a.grpcSrv = grpc.NewServer()
+	reflection.Register(a.grpcSrv)
 	pb.RegisterMessageServiceServer(a.grpcSrv, &Server{Agent: a})
 
 	for _, service := range a.services {
