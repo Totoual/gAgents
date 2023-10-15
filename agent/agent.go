@@ -79,6 +79,7 @@ type Agent struct {
 	handlers        map[string]Handler
 	services        []Service
 	acts            []Act
+	Dispatcher      *EventDispatcher
 	TaskScheduler   *TaskScheduler
 	ctx             context.Context
 	Cancel          context.CancelFunc
@@ -94,6 +95,7 @@ func NewAgent(name string, addr string) *Agent {
 		handlers:        make(map[string]Handler),
 		services:        make([]Service, 0),
 		acts:            make([]Act, 0),
+		Dispatcher:      NewEventDispatcher(ctx),
 		TaskScheduler:   NewTaskScheduler(ctx),
 		ctx:             ctx,
 		Cancel:          cancel,
