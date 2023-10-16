@@ -1,4 +1,4 @@
-package registry
+package kafka
 
 import (
 	"log"
