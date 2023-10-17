@@ -2,17 +2,40 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	gAgents "github.com/totoual/gAgents/agent"
 	"github.com/totoual/gAgents/registry/services/kafka"
 	"github.com/totoual/gAgents/registry/services/registry"
+	"gopkg.in/yaml.v3"
 )
 
-func main() {
+type Config struct {
+	AgentName string   `yaml:"agent_name"`
+	AgentURL  string   `yaml:"agent_url"`
+	KafkaURL  string   `yaml:"kafka_url"`
+	Topics    []string `yaml:"topics"`
+}
 
-	agent := gAgents.NewAgent("Alice", "localhost:8010")
+func main() {
+	data, err := os.ReadFile("config.yaml")
+	if err != nil {
+		panic(err)
+	}
+
+	var config Config
+	err = yaml.Unmarshal(data, &config)
+	if err != nil {
+		panic(err)
+	}
+
+	agent := gAgents.NewAgent(config.AgentName, config.AgentURL)
 	registry := registry.NewRegistryService(agent.Dispatcher)
-	kafka, err := kafka.NewKafkaService([]string{"localhost:9092"}, agent.Dispatcher)
+	kafka, err := kafka.NewKafkaService(
+		[]string{config.KafkaURL},
+		agent.Dispatcher,
+		config.Topics,
+	)
 	if err != nil {
 		// Handle error
 		fmt.Println("Error creating Kafka service:", err)

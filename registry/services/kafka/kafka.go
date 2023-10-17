@@ -1,7 +1,9 @@
 package kafka
 
 import (
+	"fmt"
 	"log"
+	"strings"
 
 	"github.com/IBM/sarama"
 	gAgents "github.com/totoual/gAgents/agent"
@@ -15,7 +17,7 @@ type KafkaService struct {
 	eventDispatcher *gAgents.EventDispatcher
 }
 
-func NewKafkaService(brokers []string, ed *gAgents.EventDispatcher) (*KafkaService, error) {
+func NewKafkaService(brokers []string, ed *gAgents.EventDispatcher, topics []string) (*KafkaService, error) {
 	config := sarama.NewConfig()
 	config.Producer.RequiredAcks = sarama.WaitForAll
 	config.Producer.Retry.Max = 10
@@ -82,7 +84,43 @@ func (ks *KafkaService) handleRegistrationEvent(event gAgents.Event) {
 	}
 
 	log.Println(agentRegistration)
-	event.ResponseChan <- "Topic Created Successfully"
+
+	// TODO:// Subscribe the agent to the channel before you return.
+	event.ResponseChan <- fmt.Sprintf("Topic created successfully.")
+}
+
+func (ks *KafkaService) createTopics(topics []string) error {
+	// Find a better way to create the topic. This one is an example.
+
+	adminConfig := sarama.NewConfig()
+	adminConfig.Version = sarama.MaxVersion
+
+	adminClient, err := sarama.NewClusterAdmin(ks.brokers, adminConfig)
+	if err != nil {
+		log.Println("Failed to create Kafka admin client:", err)
+		return "", err
+	}
+	defer adminClient.Close()
+
+	topicDetail := &sarama.TopicDetail{
+		NumPartitions:     1,
+		ReplicationFactor: 1,
+	}
+	for _, topic := range topics {
+		err = adminClient.CreateTopic(topic, topicDetail, false)
+		if err != nil {
+			if strings.Contains(err.Error(), "Topic with this name already exists") {
+				log.Println("Kafka Topic already exists. Returning the topic Name")
+				return nil
+			} else {
+				log.Println("Failed to create Kafka topic:", err)
+				return err
+			}
+		}
+
+		log.Println("Successfully created Kafka topic:", topic)
+	}
+	return nil
 }
 
 func (ks *KafkaService) Close() error {
