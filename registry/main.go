@@ -5,8 +5,8 @@ import (
 	"os"
 
 	gAgents "github.com/totoual/gAgents/agent"
-	"github.com/totoual/gAgents/registry/services/kafka"
 	"github.com/totoual/gAgents/registry/services/registry"
+	"github.com/totoual/gAgents/services/kafka"
 	"gopkg.in/yaml.v3"
 )
 
@@ -31,7 +31,7 @@ func main() {
 
 	agent := gAgents.NewAgent(config.AgentName, config.AgentURL)
 	registry := registry.NewRegistryService(agent.Dispatcher)
-	kafka, err := kafka.NewKafkaService(
+	kafka, err := kafka.NewKafkaProducerService(
 		[]string{config.KafkaURL},
 		agent.Dispatcher,
 		config.Topics,

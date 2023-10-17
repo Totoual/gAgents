@@ -1,23 +1,20 @@
 package kafka
 
 import (
-	"fmt"
 	"log"
 	"strings"
 
 	"github.com/IBM/sarama"
 	gAgents "github.com/totoual/gAgents/agent"
-	pb "github.com/totoual/gAgents/registry/proto"
-	"github.com/totoual/gAgents/registry/services/registry"
 )
 
-type KafkaService struct {
+type KafkaProducerService struct {
 	brokers         []string
 	producer        sarama.AsyncProducer
 	eventDispatcher *gAgents.EventDispatcher
 }
 
-func NewKafkaService(brokers []string, ed *gAgents.EventDispatcher, topics []string) (*KafkaService, error) {
+func NewKafkaProducerService(brokers []string, ed *gAgents.EventDispatcher, topics []string) (*KafkaProducerService, error) {
 	config := sarama.NewConfig()
 	config.Producer.RequiredAcks = sarama.WaitForAll
 	config.Producer.Retry.Max = 10
@@ -27,18 +24,17 @@ func NewKafkaService(brokers []string, ed *gAgents.EventDispatcher, topics []str
 		return nil, err
 	}
 
-	ks := &KafkaService{
+	ks := &KafkaProducerService{
 		brokers:         brokers,
 		producer:        producer,
 		eventDispatcher: ed,
 	}
 	ks.createTopics(topics)
-	ed.Subscribe(registry.AgentRegisteredEventType, ks.handleRegistrationEvent)
 
 	return ks, nil
 }
 
-func (ks *KafkaService) SendMessage(topic string, message []byte) error {
+func (ks *KafkaProducerService) SendMessage(topic string, message []byte) error {
 	msg := &sarama.ProducerMessage{
 		Topic: topic,
 		Value: sarama.StringEncoder(message),
@@ -47,52 +43,7 @@ func (ks *KafkaService) SendMessage(topic string, message []byte) error {
 	return nil
 }
 
-func (ks *KafkaService) ConsumeMessages(topic string, handler func(message []byte)) error {
-	config := sarama.NewConfig()
-	config.Consumer.Return.Errors = true
-
-	client, err := sarama.NewConsumer(ks.brokers, config)
-	if err != nil {
-		return err
-	}
-
-	consumer, err := client.ConsumePartition(topic, 0, sarama.OffsetOldest)
-	if err != nil {
-		return err
-	}
-
-	go func() {
-		for {
-			select {
-			case msg := <-consumer.Messages():
-				handler(msg.Value)
-			case err := <-consumer.Errors():
-				// handle error
-				log.Println(err)
-			}
-		}
-	}()
-
-	return nil
-}
-
-func (ks *KafkaService) handleRegistrationEvent(event gAgents.Event) {
-	agentRegistration, ok := event.Payload.(*pb.AgentRegistration)
-	if !ok {
-		log.Println("Invalid payload type for AgentRegistered event")
-		return
-	}
-
-	log.Println(agentRegistration)
-
-	// TODO: Understand where we should register the user, based on
-	// tags, capabilities and type.
-
-	// TODO:// Subscribe the agent to the channel before you return.
-	event.ResponseChan <- fmt.Sprintf("Topic created successfully.")
-}
-
-func (ks *KafkaService) createTopics(topics []string) error {
+func (ks *KafkaProducerService) createTopics(topics []string) error {
 	// Find a better way to create the topic. This one is an example.
 
 	adminConfig := sarama.NewConfig()
@@ -125,7 +76,7 @@ func (ks *KafkaService) createTopics(topics []string) error {
 	return nil
 }
 
-func (ks *KafkaService) Close() error {
+func (ks *KafkaProducerService) Close() error {
 	if err := ks.producer.Close(); err != nil {
 		return err
 	}

@@ -9,8 +9,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-const AgentRegisteredEventType = "AgentRegistered"
-
 type RegistryService struct {
 	pb.UnimplementedAgentRegistryServer
 	agents          map[string]*pb.AgentRegistration // Swap this to a real db.
@@ -53,3 +51,9 @@ func (rs *RegistryService) RegisterAgent(ctx context.Context, a *pb.AgentRegistr
 	}, nil
 
 }
+
+/*
+Create functions to enable search functionality. The search functionaity will
+create an event for the kafka.sendMessage function so we can inform the rest
+of the agents about the search.
+*/
