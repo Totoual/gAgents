@@ -32,7 +32,7 @@ func NewKafkaService(brokers []string, ed *gAgents.EventDispatcher, topics []str
 		producer:        producer,
 		eventDispatcher: ed,
 	}
-
+	ks.createTopics(topics)
 	ed.Subscribe(registry.AgentRegisteredEventType, ks.handleRegistrationEvent)
 
 	return ks, nil
@@ -85,6 +85,9 @@ func (ks *KafkaService) handleRegistrationEvent(event gAgents.Event) {
 
 	log.Println(agentRegistration)
 
+	// TODO: Understand where we should register the user, based on
+	// tags, capabilities and type.
+
 	// TODO:// Subscribe the agent to the channel before you return.
 	event.ResponseChan <- fmt.Sprintf("Topic created successfully.")
 }
@@ -98,7 +101,7 @@ func (ks *KafkaService) createTopics(topics []string) error {
 	adminClient, err := sarama.NewClusterAdmin(ks.brokers, adminConfig)
 	if err != nil {
 		log.Println("Failed to create Kafka admin client:", err)
-		return "", err
+		return err
 	}
 	defer adminClient.Close()
 
@@ -111,7 +114,6 @@ func (ks *KafkaService) createTopics(topics []string) error {
 		if err != nil {
 			if strings.Contains(err.Error(), "Topic with this name already exists") {
 				log.Println("Kafka Topic already exists. Returning the topic Name")
-				return nil
 			} else {
 				log.Println("Failed to create Kafka topic:", err)
 				return err

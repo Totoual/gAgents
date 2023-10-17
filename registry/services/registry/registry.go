@@ -2,9 +2,7 @@ package registry
 
 import (
 	"context"
-	"fmt"
 	"log"
-	"time"
 
 	gAgents "github.com/totoual/gAgents/agent"
 	pb "github.com/totoual/gAgents/registry/proto"
@@ -48,27 +46,10 @@ func (rs *RegistryService) RegisterAgent(ctx context.Context, a *pb.AgentRegistr
 	// Log for debugging
 	log.Printf("Registered agent: %v", a.UniqueId)
 
-	responseChan := make(chan interface{})
-	// Publish a successfully registration event.
-	event := gAgents.Event{
-		Type:         AgentRegisteredEventType,
-		Payload:      a,
-		ResponseChan: responseChan,
-	}
-	rs.eventDispatcher.Publish(event)
+	return &pb.RegistrationResponse{
+		Success: true,
+		Message: "Agent registered successfully.",
+		Topics:  []string{"negotiation", "services"},
+	}, nil
 
-	select {
-	case response := <-responseChan:
-		// Successfully received a response
-		return &pb.RegistrationResponse{
-			Success: true,
-			Message: fmt.Sprintf("Agent registered successfully. %v", response),
-		}, nil
-	case <-time.After(10 * time.Second): // 10 seconds timeout, adjust as needed
-		// Timed out waiting for a response
-		return &pb.RegistrationResponse{
-			Success: false,
-			Message: "Timeout waiting for subscription confirmation.",
-		}, nil
-	}
 }

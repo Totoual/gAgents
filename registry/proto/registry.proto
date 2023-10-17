@@ -74,4 +74,5 @@ service AgentRegistry {
 message RegistrationResponse {
     bool success = 1;
     string message = 2; // Feedback message on the outcome of the registration.
+    repeated string topics = 3;
 }

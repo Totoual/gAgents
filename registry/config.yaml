@@ -1,5 +1,7 @@
 agent_name: "RegistryAgent"
-agent_url: "http://localhost:8010"
+agent_url: "localhost:8010"
 kafka_url: "localhost:9092"
 topics:
   - "negotiation"
+  - "services"
+  - "e-commerce"
