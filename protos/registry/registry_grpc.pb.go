@@ -4,7 +4,7 @@
 // - protoc             v4.23.4
 // source: registry.proto
 
-package proto
+package registry
 
 import (
 	context "context"
@@ -36,7 +36,7 @@ func NewAgentRegistryClient(cc grpc.ClientConnInterface) AgentRegistryClient {
 
 func (c *agentRegistryClient) RegisterAgent(ctx context.Context, in *AgentRegistration, opts ...grpc.CallOption) (*RegistrationResponse, error) {
 	out := new(RegistrationResponse)
-	err := c.cc.Invoke(ctx, "/gAgentsRegistry.AgentRegistry/RegisterAgent", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/registry.AgentRegistry/RegisterAgent", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +45,7 @@ func (c *agentRegistryClient) RegisterAgent(ctx context.Context, in *AgentRegist
 
 func (c *agentRegistryClient) Search(ctx context.Context, in *SearchMessage, opts ...grpc.CallOption) (*SearchMessageResponse, error) {
 	out := new(SearchMessageResponse)
-	err := c.cc.Invoke(ctx, "/gAgentsRegistry.AgentRegistry/Search", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/registry.AgentRegistry/Search", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func _AgentRegistry_RegisterAgent_Handler(srv interface{}, ctx context.Context, 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/gAgentsRegistry.AgentRegistry/RegisterAgent",
+		FullMethod: "/registry.AgentRegistry/RegisterAgent",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AgentRegistryServer).RegisterAgent(ctx, req.(*AgentRegistration))
@@ -112,7 +112,7 @@ func _AgentRegistry_Search_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/gAgentsRegistry.AgentRegistry/Search",
+		FullMethod: "/registry.AgentRegistry/Search",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AgentRegistryServer).Search(ctx, req.(*SearchMessage))
@@ -124,7 +124,7 @@ func _AgentRegistry_Search_Handler(srv interface{}, ctx context.Context, dec fun
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var AgentRegistry_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "gAgentsRegistry.AgentRegistry",
+	ServiceName: "registry.AgentRegistry",
 	HandlerType: (*AgentRegistryServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

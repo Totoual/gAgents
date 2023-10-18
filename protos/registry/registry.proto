@@ -1,6 +1,6 @@
 syntax = "proto3";
-package gAgentsRegistry;
-option go_package= "github.com/totoual/gAgents/registry/proto";
+package registry;
+option go_package= "github.com/totoual/gAgents/protos/registry/";
 
 // Define messages for each of the complex data points
 

@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	pb "github.com/totoual/gAgents/generated/proto" // Import the generated gRPC package
+	pb "github.com/totoual/gAgents/protos/messaging" // Import the generated gRPC package
 
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"

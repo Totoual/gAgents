@@ -5,7 +5,7 @@ import (
 	"log"
 
 	gAgents "github.com/totoual/gAgents/agent"
-	pb "github.com/totoual/gAgents/registry/proto"
+	pb "github.com/totoual/gAgents/protos/registry"
 	"google.golang.org/grpc"
 )
 

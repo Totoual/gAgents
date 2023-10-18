@@ -5,7 +5,7 @@ import (
 
 	"github.com/IBM/sarama"
 	gAgents "github.com/totoual/gAgents/agent"
-	pb "github.com/totoual/gAgents/registry/proto"
+	pb "github.com/totoual/gAgents/protos/registry"
 )
 
 type KafkaConsumerService struct {
@@ -14,7 +14,7 @@ type KafkaConsumerService struct {
 	eventDispatcher *gAgents.EventDispatcher
 }
 
-func NewKafkaConsumerService(brokers []string, ed *gAgents.EventDispatcher, topics []string) (*KafkaConsumerService, error) {
+func NewKafkaConsumerService(brokers []string, ed *gAgents.EventDispatcher) (*KafkaConsumerService, error) {
 	config := sarama.NewConfig()
 	config.Consumer.Return.Errors = true
 
