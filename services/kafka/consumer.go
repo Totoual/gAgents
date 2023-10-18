@@ -1,7 +1,6 @@
 package kafka
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/IBM/sarama"
@@ -51,7 +50,7 @@ func (ks *KafkaConsumerService) handleRegistrationEvent(event gAgents.Event) {
 		}
 	}
 
-	event.ResponseChan <- fmt.Sprintf("Subscribed to topics successfully.")
+	event.ResponseChan <- "Subscribed to topics successfully."
 }
 
 func (ks *KafkaConsumerService) EmitEvent(message []byte) {

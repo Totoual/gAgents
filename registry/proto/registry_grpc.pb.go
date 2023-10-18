@@ -23,6 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AgentRegistryClient interface {
 	RegisterAgent(ctx context.Context, in *AgentRegistration, opts ...grpc.CallOption) (*RegistrationResponse, error)
+	Search(ctx context.Context, in *SearchMessage, opts ...grpc.CallOption) (*SearchMessageResponse, error)
 }
 
 type agentRegistryClient struct {
@@ -42,11 +43,21 @@ func (c *agentRegistryClient) RegisterAgent(ctx context.Context, in *AgentRegist
 	return out, nil
 }
 
+func (c *agentRegistryClient) Search(ctx context.Context, in *SearchMessage, opts ...grpc.CallOption) (*SearchMessageResponse, error) {
+	out := new(SearchMessageResponse)
+	err := c.cc.Invoke(ctx, "/gAgentsRegistry.AgentRegistry/Search", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AgentRegistryServer is the server API for AgentRegistry service.
 // All implementations must embed UnimplementedAgentRegistryServer
 // for forward compatibility
 type AgentRegistryServer interface {
 	RegisterAgent(context.Context, *AgentRegistration) (*RegistrationResponse, error)
+	Search(context.Context, *SearchMessage) (*SearchMessageResponse, error)
 	mustEmbedUnimplementedAgentRegistryServer()
 }
 
@@ -56,6 +67,9 @@ type UnimplementedAgentRegistryServer struct {
 
 func (UnimplementedAgentRegistryServer) RegisterAgent(context.Context, *AgentRegistration) (*RegistrationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterAgent not implemented")
+}
+func (UnimplementedAgentRegistryServer) Search(context.Context, *SearchMessage) (*SearchMessageResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Search not implemented")
 }
 func (UnimplementedAgentRegistryServer) mustEmbedUnimplementedAgentRegistryServer() {}
 
@@ -88,6 +102,24 @@ func _AgentRegistry_RegisterAgent_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AgentRegistry_Search_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SearchMessage)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AgentRegistryServer).Search(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/gAgentsRegistry.AgentRegistry/Search",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AgentRegistryServer).Search(ctx, req.(*SearchMessage))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AgentRegistry_ServiceDesc is the grpc.ServiceDesc for AgentRegistry service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -98,6 +130,10 @@ var AgentRegistry_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RegisterAgent",
 			Handler:    _AgentRegistry_RegisterAgent_Handler,
+		},
+		{
+			MethodName: "Search",
+			Handler:    _AgentRegistry_Search_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
