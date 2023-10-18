@@ -3,6 +3,8 @@ package gAgents
 import (
 	"sync"
 
+	"log"
+
 	"golang.org/x/net/context"
 )
 
@@ -35,7 +37,7 @@ func (ed *EventDispatcher) Subscribe(eventType string, handler func(event Event)
 func (ed *EventDispatcher) Publish(event Event) {
 	ed.mu.RLock()
 	defer ed.mu.RUnlock()
-
+	log.Printf("New event published: %s", event.Type)
 	handlers, found := ed.subscribers[event.Type]
 	if !found {
 		return

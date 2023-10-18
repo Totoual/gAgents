@@ -5,7 +5,8 @@ import (
 	"os"
 
 	gAgents "github.com/totoual/gAgents/agent"
-	"github.com/totoual/gAgents/registry/services/registry"
+	"github.com/totoual/gAgents/examples/registration_and_search/service_agent/acts"
+	"github.com/totoual/gAgents/examples/registration_and_search/service_agent/config"
 	"github.com/totoual/gAgents/services/kafka"
 	"gopkg.in/yaml.v3"
 )
@@ -16,17 +17,20 @@ func main() {
 		panic(err)
 	}
 
-	var config AgentConfig
+	var config config.AgentConfig
 	err = yaml.Unmarshal(data, &config)
 	if err != nil {
 		panic(err)
 	}
 
 	agent := gAgents.NewAgent(config.AgentName, config.AgentURL)
-	registry := registry.NewRegistryService(agent.Dispatcher)
+	r := acts.NewRegistrationAct(config, agent.Dispatcher)
+	agent.RegisterAct(r)
+
 	kafka, err := kafka.NewKafkaConsumerService(
 		[]string{config.KafkaURL},
 		agent.Dispatcher,
+		r.Event,
 	)
 	if err != nil {
 		// Handle error
@@ -34,8 +38,7 @@ func main() {
 		return
 	}
 	fmt.Println(kafka)
-	agent.RegisterService(registry)
-	fmt.Printf(agent.Addr)
+
 	agent.Run()
 
 }
