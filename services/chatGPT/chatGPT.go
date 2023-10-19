@@ -41,12 +41,12 @@ func (client *GPTClient) GenerateText(prompt string) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	var responsePayload map[string] interface{}
+	var responsePayload map[string]interface{}
 
 	err = json.NewDecoder(resp.Body).Decode(&responsePayload)
 	if err != nil {
 		return "", err
 	}
 
-	return responsePayload["choices"][0].((map[string]interface{})["text"].(string), nil)
+	return responsePayload["choices"].([]interface{})[0].(map[string]interface{})["text"].(string), nil
 }
