@@ -45,8 +45,6 @@ func (ts *TaskScheduler) ExecuteTasks() {
 			currentTime := time.Now().UTC()
 
 			for taskID, task := range ts.Tasks {
-				log.Printf(currentTime.String())
-				log.Printf(task.ScheduledAt().String())
 				if task.ScheduledAt().Before(currentTime) || task.ScheduledAt().Equal(currentTime) {
 					// Execute the task
 					log.Printf("Executing the task!")

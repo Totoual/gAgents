@@ -3,10 +3,12 @@ package main
 import (
 	"fmt"
 	"os"
+	"time"
 
 	gAgents "github.com/totoual/gAgents/agent"
 	"github.com/totoual/gAgents/examples/registration_and_search/service_agent/acts"
 	"github.com/totoual/gAgents/examples/registration_and_search/service_agent/config"
+	"github.com/totoual/gAgents/examples/registration_and_search/service_agent/tasks"
 	"github.com/totoual/gAgents/services/kafka"
 	"gopkg.in/yaml.v3"
 )
@@ -26,6 +28,9 @@ func main() {
 	agent := gAgents.NewAgent(config.AgentName, config.AgentURL)
 	r := acts.NewRegistrationAct(config, agent.Dispatcher)
 	agent.RegisterAct(r)
+
+	t := tasks.NewHeartbeatTask(time.Now(), 2*time.Minute, config)
+	agent.TaskScheduler.AddTask(t)
 
 	kafka, err := kafka.NewKafkaConsumerService(
 		[]string{config.KafkaURL},

@@ -1,4 +1,7 @@
 syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
 package registry;
 option go_package= "github.com/totoual/gAgents/protos/registry/";
 
@@ -61,6 +64,7 @@ message AgentRegistration {
     ContactInformation contact_info = 8;
 
     repeated string tags = 10; // Simple list of tags/labels
+    google.protobuf.Timestamp last_heartbeat = 11;
 
 }
 
@@ -80,6 +84,7 @@ message SearchMessageResponse{
 service AgentRegistry {
     rpc RegisterAgent(AgentRegistration) returns (RegistrationResponse);
     rpc Search(SearchMessage) returns (SearchMessageResponse);
+    rpc SendHeartbeat(Heartbeat) returns (HealthCheckResponse);
     // ... other RPC methods, like unregister, update, etc.
 }
 
@@ -87,6 +92,25 @@ message RegistrationResponse {
     bool success = 1;
     string message = 2; // Feedback message on the outcome of the registration.
     repeated string topics = 3;
+}
+
+message AgentUnregistration {
+    string unique_id = 1;
+}
+
+message UnregistrationResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+message Heartbeat {
+    string unique_id = 1;
+    google.protobuf.Timestamp timestamp = 2;
+}
+
+message HealthCheckResponse {
+    bool success = 1;
+    string message = 2;
 }
 
 

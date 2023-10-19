@@ -24,6 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type AgentRegistryClient interface {
 	RegisterAgent(ctx context.Context, in *AgentRegistration, opts ...grpc.CallOption) (*RegistrationResponse, error)
 	Search(ctx context.Context, in *SearchMessage, opts ...grpc.CallOption) (*SearchMessageResponse, error)
+	SendHeartbeat(ctx context.Context, in *Heartbeat, opts ...grpc.CallOption) (*HealthCheckResponse, error)
 }
 
 type agentRegistryClient struct {
@@ -52,12 +53,22 @@ func (c *agentRegistryClient) Search(ctx context.Context, in *SearchMessage, opt
 	return out, nil
 }
 
+func (c *agentRegistryClient) SendHeartbeat(ctx context.Context, in *Heartbeat, opts ...grpc.CallOption) (*HealthCheckResponse, error) {
+	out := new(HealthCheckResponse)
+	err := c.cc.Invoke(ctx, "/registry.AgentRegistry/SendHeartbeat", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AgentRegistryServer is the server API for AgentRegistry service.
 // All implementations must embed UnimplementedAgentRegistryServer
 // for forward compatibility
 type AgentRegistryServer interface {
 	RegisterAgent(context.Context, *AgentRegistration) (*RegistrationResponse, error)
 	Search(context.Context, *SearchMessage) (*SearchMessageResponse, error)
+	SendHeartbeat(context.Context, *Heartbeat) (*HealthCheckResponse, error)
 	mustEmbedUnimplementedAgentRegistryServer()
 }
 
@@ -70,6 +81,9 @@ func (UnimplementedAgentRegistryServer) RegisterAgent(context.Context, *AgentReg
 }
 func (UnimplementedAgentRegistryServer) Search(context.Context, *SearchMessage) (*SearchMessageResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Search not implemented")
+}
+func (UnimplementedAgentRegistryServer) SendHeartbeat(context.Context, *Heartbeat) (*HealthCheckResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendHeartbeat not implemented")
 }
 func (UnimplementedAgentRegistryServer) mustEmbedUnimplementedAgentRegistryServer() {}
 
@@ -120,6 +134,24 @@ func _AgentRegistry_Search_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AgentRegistry_SendHeartbeat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Heartbeat)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AgentRegistryServer).SendHeartbeat(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/registry.AgentRegistry/SendHeartbeat",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AgentRegistryServer).SendHeartbeat(ctx, req.(*Heartbeat))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AgentRegistry_ServiceDesc is the grpc.ServiceDesc for AgentRegistry service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -134,6 +166,10 @@ var AgentRegistry_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Search",
 			Handler:    _AgentRegistry_Search_Handler,
+		},
+		{
+			MethodName: "SendHeartbeat",
+			Handler:    _AgentRegistry_SendHeartbeat_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

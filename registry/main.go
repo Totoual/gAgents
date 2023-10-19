@@ -3,9 +3,11 @@ package main
 import (
 	"fmt"
 	"os"
+	"time"
 
 	gAgents "github.com/totoual/gAgents/agent"
 	"github.com/totoual/gAgents/registry/services/registry"
+	healthcheck "github.com/totoual/gAgents/registry/tasks/health_check"
 	"github.com/totoual/gAgents/services/kafka"
 	"gopkg.in/yaml.v3"
 )
@@ -30,7 +32,9 @@ func main() {
 	}
 
 	agent := gAgents.NewAgent(config.AgentName, config.AgentURL)
-	registry := registry.NewRegistryService(agent.Dispatcher)
+	registry := registry.NewRegistryService(agent.Dispatcher, agent.TaskScheduler)
+	heartbeat := healthcheck.NewHeartbeatTask(time.Now(), 30*time.Minute, registry)
+	agent.TaskScheduler.AddTask(heartbeat)
 	kafka, err := kafka.NewKafkaProducerService(
 		[]string{config.KafkaURL},
 		agent.Dispatcher,
