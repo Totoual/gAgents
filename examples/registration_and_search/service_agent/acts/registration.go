@@ -13,11 +13,12 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-const AgentRegisteredEventType = "AgentRegistered"
+const (
+	AgentRegisteredEventType = "AgentRegistered"
+)
 
 type RegistrationAct struct {
 	Config config.AgentConfig
-	Event  string
 	ed     *gAgents.EventDispatcher
 }
 
@@ -25,7 +26,6 @@ func NewRegistrationAct(config config.AgentConfig, ed *gAgents.EventDispatcher) 
 	return &RegistrationAct{
 		Config: config,
 		ed:     ed,
-		Event:  AgentRegisteredEventType,
 	}
 }
 

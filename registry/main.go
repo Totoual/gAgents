@@ -2,12 +2,15 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"time"
 
+	"github.com/joho/godotenv"
 	gAgents "github.com/totoual/gAgents/agent"
 	"github.com/totoual/gAgents/registry/services/registry"
 	healthcheck "github.com/totoual/gAgents/registry/tasks/health_check"
+	chatgpt "github.com/totoual/gAgents/services/chatGPT"
 	"github.com/totoual/gAgents/services/kafka"
 	"gopkg.in/yaml.v3"
 )
@@ -17,6 +20,13 @@ type Config struct {
 	AgentURL  string   `yaml:"agent_url"`
 	KafkaURL  string   `yaml:"kafka_url"`
 	Topics    []string `yaml:"topics"`
+}
+
+func init() {
+	err := godotenv.Load() // Load .env file from the current directory
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 }
 
 func main() {
@@ -32,8 +42,11 @@ func main() {
 	}
 
 	agent := gAgents.NewAgent(config.AgentName, config.AgentURL)
-	registry := registry.NewRegistryService(agent.Dispatcher, agent.TaskScheduler)
-	heartbeat := healthcheck.NewHeartbeatTask(time.Now(), 30*time.Minute, registry)
+	reg := registry.NewRegistryService(agent.Dispatcher, agent.TaskScheduler)
+	heartbeat := healthcheck.NewHeartbeatTask(time.Now(), 30*time.Minute, reg)
+	gpt := chatgpt.NewGPTClient(agent.Dispatcher, registry.SearchEvent, registry.TopicSuggestionEvent)
+	fmt.Printf(gpt.ApiKey)
+
 	agent.TaskScheduler.AddTask(heartbeat)
 	kafka, err := kafka.NewKafkaProducerService(
 		[]string{config.KafkaURL},
@@ -46,7 +59,7 @@ func main() {
 		return
 	}
 	fmt.Println(kafka)
-	agent.RegisterService(registry)
+	agent.RegisterService(reg)
 	fmt.Printf(agent.Addr)
 	agent.Run()
 

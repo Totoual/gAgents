@@ -35,7 +35,7 @@ func main() {
 	kafka, err := kafka.NewKafkaConsumerService(
 		[]string{config.KafkaURL},
 		agent.Dispatcher,
-		r.Event,
+		acts.AgentRegisteredEventType,
 	)
 	if err != nil {
 		// Handle error

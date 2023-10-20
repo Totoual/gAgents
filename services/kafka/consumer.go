@@ -14,7 +14,7 @@ type KafkaConsumerService struct {
 	eventDispatcher *gAgents.EventDispatcher
 }
 
-func NewKafkaConsumerService(brokers []string, ed *gAgents.EventDispatcher, e string) (*KafkaConsumerService, error) {
+func NewKafkaConsumerService(brokers []string, ed *gAgents.EventDispatcher, e gAgents.EventType) (*KafkaConsumerService, error) {
 	config := sarama.NewConfig()
 	config.Consumer.Return.Errors = true
 

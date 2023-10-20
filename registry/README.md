@@ -2,6 +2,8 @@
 
 The gAgents Registry Service is a vital part of the distributed network architecture, serving as the hub for agent registration and event dissemination. Agents register with the registry, declaring their capabilities and services. When an agent seeks a particular service, the registry emits an event to the corresponding service providers through a Kafka topic, facilitating a direct communication between the requesting agent and the service providers.
 
+Inorder to run the registry you will need to create a `.env` file in the root directory of the registry and provide an `OPENAI_API_KEY`
+
 ## Registration Protocol
 
 Agents get registered via a `RegisterAgent` RPC call, passing an `AgentRegistration` message. Here's the `AgentRegistration` message structure:

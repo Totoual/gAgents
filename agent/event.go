@@ -8,26 +8,28 @@ import (
 	"golang.org/x/net/context"
 )
 
+type EventType string
+
 type Event struct {
-	Type         string
+	Type         EventType
 	Payload      interface{}
 	ResponseChan chan interface{}
 }
 
 type EventDispatcher struct {
-	subscribers map[string][]func(event Event)
+	subscribers map[EventType][]func(event Event)
 	ctx         context.Context
 	mu          sync.RWMutex
 }
 
 func NewEventDispatcher(ctx context.Context) *EventDispatcher {
 	return &EventDispatcher{
-		subscribers: make(map[string][]func(event Event)),
+		subscribers: make(map[EventType][]func(event Event)),
 		ctx:         ctx,
 	}
 }
 
-func (ed *EventDispatcher) Subscribe(eventType string, handler func(event Event)) {
+func (ed *EventDispatcher) Subscribe(eventType EventType, handler func(event Event)) {
 	ed.mu.Lock()
 	defer ed.mu.Unlock()
 
