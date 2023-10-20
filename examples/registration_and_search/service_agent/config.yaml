@@ -5,8 +5,8 @@ registry_url: "localhost:8010"
 unique_id: "agent-12346"
 agent_type: "Service Provider"
 capabilities:
- - "negotiation"
- - "delivery"
+ - "homeware"
+ - "kichenware"
 metadata:
   software_version: "1.0.0"
   location:
@@ -23,6 +23,6 @@ contact_info:
   email: "agent@example.com"
   secondary_channel: "http://example.com/contact"
 tags: 
-  - "urgent"
-  - "high-priority"
+  - "presents"
+  - "modern-kitchen"
 

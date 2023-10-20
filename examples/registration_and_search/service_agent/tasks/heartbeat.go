@@ -16,18 +16,20 @@ import (
 )
 
 type HeartbeatTask struct {
-	id          string
-	scheduledAt time.Time
-	interval    time.Duration
-	Config      config.AgentConfig
+	id               string
+	scheduledAt      time.Time
+	interval         time.Duration
+	Config           config.AgentConfig
+	stop_contidition bool
 }
 
 func NewHeartbeatTask(st time.Time, it time.Duration, config config.AgentConfig) *HeartbeatTask {
 	return &HeartbeatTask{
-		id:          uuid.New().String(),
-		scheduledAt: st,
-		interval:    it,
-		Config:      config,
+		id:               uuid.New().String(),
+		scheduledAt:      st,
+		interval:         it,
+		Config:           config,
+		stop_contidition: false,
 	}
 }
 
@@ -61,7 +63,9 @@ func (t *HeartbeatTask) Execute() {
 	if err != nil {
 		log.Println(err)
 	}
-
+	if !response.Success {
+		t.stop_contidition = true
+	}
 	log.Println(response)
 }
 
@@ -71,7 +75,7 @@ func (t *HeartbeatTask) Interval() time.Duration {
 
 func (t *HeartbeatTask) StopCondition() bool {
 	// Implement stop condition logic if needed
-	return false
+	return t.stop_contidition
 }
 
 func (t *HeartbeatTask) RescheduleTaskAt(newTime time.Time) gAgents.Task {

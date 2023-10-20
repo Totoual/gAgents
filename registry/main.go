@@ -45,7 +45,7 @@ func main() {
 	reg := registry.NewRegistryService(agent.Dispatcher, agent.TaskScheduler)
 	heartbeat := healthcheck.NewHeartbeatTask(time.Now(), 30*time.Minute, reg)
 	gpt := chatgpt.NewGPTClient(
-		agent.Dispatcher, registry.SearchEvent, registry.TopicSuggestionEvent, config.Topics,
+		agent.Dispatcher, "gpt-4", registry.SearchEvent, registry.TopicSuggestionEvent, config.Topics,
 	)
 	fmt.Printf(gpt.ApiKey)
 

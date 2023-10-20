@@ -9,6 +9,7 @@ import (
 	"github.com/golang/protobuf/ptypes/timestamp"
 	gAgents "github.com/totoual/gAgents/agent"
 	pb "github.com/totoual/gAgents/protos/registry"
+	chatgpt "github.com/totoual/gAgents/services/chatGPT"
 	"google.golang.org/grpc"
 )
 
@@ -64,12 +65,13 @@ func (rs *RegistryService) RegisterAgent(ctx context.Context, a *pb.AgentRegistr
 	// Wait for the response in the channel
 	select {
 	case response := <-responseChan:
+		topics := response.([]string)
 		// Successfully received a response
-		fmt.Println(response)
+		fmt.Printf("Registry: we receivend the response from ChatGPT: %s", response)
 		return &pb.RegistrationResponse{
 			Success: true,
 			Message: "Agent registered successfully.",
-			Topics:  make([]string, 0),
+			Topics:  topics,
 		}, nil
 	case <-time.After(10 * time.Second): // 10 seconds timeout, adjust as needed
 		// Timed out waiting for a response
@@ -117,10 +119,6 @@ func (rs *RegistryService) SendHeartbeat(ctx context.Context, hb *pb.Heartbeat) 
 	// Update the last heartbeat timestamp for the agent.
 	agent.LastHeartbeat = &timestamp.Timestamp{Seconds: hb.Timestamp.Seconds, Nanos: hb.Timestamp.Nanos}
 
-	// You could also update a database, if you are using one, to store the last heartbeat timestamp.
-
-	log.Printf("Received heartbeat from agent: %v at %v", hb.UniqueId, hb.Timestamp.AsTime())
-
 	return &pb.HealthCheckResponse{
 		Success: true,
 		Message: "Heartbeat received successfully",
@@ -131,11 +129,32 @@ func (rs *RegistryService) Search(ctx context.Context, sm *pb.SearchMessage) (*p
 	// For simplicity, just returning a success message without actually doing anything
 
 	// Emit event to convert the Message to Kafka Message.
+	responseChan := make(chan interface{})
+	event := gAgents.Event{
+		Type:         SearchEvent,
+		Payload:      sm,
+		ResponseChan: responseChan,
+	}
+	rs.eventDispatcher.Publish(event)
 
-	return &pb.SearchMessageResponse{
-		Success: true,
-		Message: "Search request received.",
-	}, nil
+	select {
+	case response := <-responseChan:
+
+		sr := response.(chatgpt.SearchResult)
+		// Build the kafka Message to publish
+		// Successfully received a response
+		fmt.Printf("Registry: we receivend the response from ChatGPT: %s", sr)
+		return &pb.SearchMessageResponse{
+			Success: true,
+			Message: "Search request received.",
+		}, nil
+	case <-time.After(10 * time.Second): // 10 seconds timeout, adjust as needed
+		// Timed out waiting for a response
+		return &pb.SearchMessageResponse{
+			Success: false,
+			Message: "Search request timedout.",
+		}, nil
+	}
 }
 
 /*
