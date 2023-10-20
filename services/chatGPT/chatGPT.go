@@ -19,9 +19,10 @@ const (
 type GPTClient struct {
 	ApiKey          string
 	eventDispatcher *gAgents.EventDispatcher
+	topics          []string
 }
 
-func NewGPTClient(ed *gAgents.EventDispatcher, se, te gAgents.EventType) *GPTClient {
+func NewGPTClient(ed *gAgents.EventDispatcher, se, te gAgents.EventType, t []string) *GPTClient {
 	apiKey, exists := os.LookupEnv("OPENAI_API_KEY")
 	if !exists {
 		log.Panicf("Please provide an api key!")
@@ -29,6 +30,7 @@ func NewGPTClient(ed *gAgents.EventDispatcher, se, te gAgents.EventType) *GPTCli
 	client := &GPTClient{
 		ApiKey:          apiKey,
 		eventDispatcher: ed,
+		topics:          t,
 	}
 	client.eventDispatcher.Subscribe(se, client.HandleSearchEvent)
 	client.eventDispatcher.Subscribe(te, client.HandleSuggestionEvent)
@@ -88,15 +90,15 @@ func (client *GPTClient) HandleSuggestionEvent(event gAgents.Event) {
 	// tags := "clothing, modern-cloths, trousers, men, women, kids"
 	// existingTopics := `["Homeware", "KidsToys", "ModernCloths", "Cloths", "ClothsLondon", "KidsItemsEurope"]`
 
-	// suggestionPrompt := fmt.Sprintf(`
-	// 	Capabilities:  %s
-	// 	Location: London
-	// 	Tags: %s
-	// 	Existing Topics: %s
+	suggestionPrompt := fmt.Sprintf(`
+	Capabilities:  %s
+	Tags: %s
+	Existing Topics: %s
 
-	// 	Please analyse the details of the agent and extract any information on the capabilities, location, and tags. Then suggest the most relevant topics for the agent to subscribe to from the list of existing topics provided.
-	// `, capabilities, tags, existingTopics)
+	Please analyse the details of the agent and extract any information on the capabilities, location, and tags. Then suggest the most relevant topics for the agent to subscribe to from the list of existing topics provided.
+	`, payload.Capabilities, payload.Tags, client.topics)
 
+	fmt.Printf("The prompt we are going to use is: \n %s \n", suggestionPrompt)
 }
 
 func (client *GPTClient) HandleSearchEvent(event gAgents.Event) {

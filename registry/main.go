@@ -44,7 +44,9 @@ func main() {
 	agent := gAgents.NewAgent(config.AgentName, config.AgentURL)
 	reg := registry.NewRegistryService(agent.Dispatcher, agent.TaskScheduler)
 	heartbeat := healthcheck.NewHeartbeatTask(time.Now(), 30*time.Minute, reg)
-	gpt := chatgpt.NewGPTClient(agent.Dispatcher, registry.SearchEvent, registry.TopicSuggestionEvent)
+	gpt := chatgpt.NewGPTClient(
+		agent.Dispatcher, registry.SearchEvent, registry.TopicSuggestionEvent, config.Topics,
+	)
 	fmt.Printf(gpt.ApiKey)
 
 	agent.TaskScheduler.AddTask(heartbeat)
