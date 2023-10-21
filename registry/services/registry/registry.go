@@ -143,12 +143,13 @@ func (rs *RegistryService) Search(ctx context.Context, sm *pb.SearchMessage) (*p
 		sr := response.(chatgpt.SearchResult)
 		// Build the kafka Message to publish
 		// Successfully received a response
-		fmt.Printf("Registry: we receivend the response from ChatGPT: %s", sr)
+		fmt.Printf("Registry: we receivend the response from ChatGPT: %v", sr)
+		fmt.Printf("The price is : %f", sr.PriceRange)
 		return &pb.SearchMessageResponse{
 			Success: true,
 			Message: "Search request received.",
 		}, nil
-	case <-time.After(10 * time.Second): // 10 seconds timeout, adjust as needed
+	case <-time.After(20 * time.Second): // 10 seconds timeout, adjust as needed
 		// Timed out waiting for a response
 		return &pb.SearchMessageResponse{
 			Success: false,

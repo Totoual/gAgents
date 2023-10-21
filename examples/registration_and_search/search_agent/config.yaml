@@ -1,0 +1,5 @@
+agent_name: "Bob"
+agent_url: "localhost:8030"
+registry_url: "localhost:8010"
+unique_id: "agent-123"
+agent_type: "Search Agent"
