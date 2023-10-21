@@ -4,11 +4,24 @@ import (
 	"context"
 	"fmt"
 
+	gAgents "github.com/totoual/gAgents/agent"
 	pb "github.com/totoual/gAgents/examples/registration_and_search/search_agent/services/user_input/proto"
+	"google.golang.org/grpc"
 )
 
 type UserInteractionService struct {
 	pb.UnimplementedUserInteractionServer
+	eventDispatcher *gAgents.EventDispatcher
+}
+
+func NewUserInteractionService(ed *gAgents.EventDispatcher) *UserInteractionService {
+	return &UserInteractionService{
+		eventDispatcher: ed,
+	}
+}
+
+func (us *UserInteractionService) Init(srv *grpc.Server) {
+	pb.RegisterUserInteractionServer(srv, us)
 }
 
 func (s *UserInteractionService) UserSearch(ctx context.Context, in *pb.UserSearchMessage) (*pb.UserSearchMessageResponse, error) {
