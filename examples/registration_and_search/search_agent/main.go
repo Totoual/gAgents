@@ -5,6 +5,7 @@ import (
 
 	gAgents "github.com/totoual/gAgents/agent"
 	"github.com/totoual/gAgents/examples/registration_and_search/search_agent/config"
+	userinput "github.com/totoual/gAgents/examples/registration_and_search/search_agent/services/user_input"
 	"gopkg.in/yaml.v3"
 )
 
@@ -21,7 +22,11 @@ func main() {
 	}
 
 	agent := gAgents.NewAgent(config.AgentName, config.AgentURL)
-
+	user_input := userinput.NewUserInteractionService(
+		agent.Dispatcher,
+		config,
+	)
+	agent.RegisterService(user_input)
 	agent.Run()
 
 }
