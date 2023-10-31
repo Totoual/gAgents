@@ -46,7 +46,6 @@ func (t *HeartbeatTask) ScheduledAt() time.Time {
 }
 
 func (t *HeartbeatTask) Execute() {
-	log.Printf("Sending the message to %v", t.Config.RegistryURL)
 	conn, err := grpc.Dial(t.Config.RegistryURL, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		fmt.Errorf("failed to connect: %v", err)

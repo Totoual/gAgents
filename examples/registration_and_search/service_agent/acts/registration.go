@@ -32,9 +32,8 @@ func NewRegistrationAct(config config.AgentConfig, ed *gAgents.EventDispatcher) 
 // Perform is the method called when the act is performed.
 func (r *RegistrationAct) Perform(a *gAgents.Agent) {
 	// Perform action...
-	fmt.Println(" \n RegistrationAct performed.")
-	fmt.Println(r.Config)
-	log.Printf("Sending the message to %v", r.Config.RegistryURL)
+	log.Println(" \n RegistrationAct performed.")
+	log.Println(r.Config)
 	conn, err := grpc.Dial(r.Config.RegistryURL, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		fmt.Errorf("failed to connect: %v", err)
@@ -77,7 +76,6 @@ func (r *RegistrationAct) Perform(a *gAgents.Agent) {
 	} else {
 
 		// Emit an event that we managed to register. So we can subscribe to topics
-		fmt.Println(response.Message)
 		responseChan := make(chan interface{})
 		event := gAgents.Event{
 			Type:         AgentRegisteredEventType,

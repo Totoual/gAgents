@@ -1,12 +1,48 @@
 package kafka
 
 import (
+	"encoding/json"
+	"fmt"
 	"log"
 	"strings"
 
 	"github.com/IBM/sarama"
 	gAgents "github.com/totoual/gAgents/agent"
 )
+
+const (
+	KafkaSearchRequest = "KafkaSearchRequest"
+)
+
+type KafkaSearchMessage struct {
+	Object              string   `json:"object"`
+	Characteristics     []string `json:"characteristics"`
+	Category            string   `json:"category"`
+	PriceRange          float32  `json:"price_range"`
+	IntendedUse         string   `json:"intended_use"`
+	MaterialPreferences []string `json:"material_preferences"`
+	RelevantTopics      []string `json:"relevant_topics"`
+}
+
+func NewKafkaSearchMessage(
+	object string,
+	characteristics []string,
+	category string,
+	price_range float32,
+	intended_use string,
+	material_preferences []string,
+	relevant_topics []string,
+) (*KafkaSearchMessage, error) {
+	return &KafkaSearchMessage{
+		Object:              object,
+		Characteristics:     characteristics,
+		Category:            category,
+		PriceRange:          price_range,
+		IntendedUse:         intended_use,
+		MaterialPreferences: material_preferences,
+		RelevantTopics:      relevant_topics,
+	}, nil
+}
 
 type KafkaProducerService struct {
 	brokers         []string
@@ -30,11 +66,30 @@ func NewKafkaProducerService(brokers []string, ed *gAgents.EventDispatcher, topi
 		eventDispatcher: ed,
 	}
 	ks.createTopics(topics)
-
+	ks.eventDispatcher.Subscribe(KafkaSearchRequest, ks.handleSearchEvent)
 	return ks, nil
 }
 
-func (ks *KafkaProducerService) SendMessage(topic string, message []byte) error {
+func (ks *KafkaProducerService) handleSearchEvent(event gAgents.Event) {
+	log.Printf("Handling a search Event!")
+	search_request, ok := event.Payload.(*KafkaSearchMessage)
+	if !ok {
+		log.Println("Invalid payload type for Search Request event")
+		return
+	}
+	jsonData, err := json.Marshal(search_request)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	log.Printf("Publishing a new Message to the Channel!")
+	for _, topic := range search_request.RelevantTopics {
+		ks.sendMessage(topic, jsonData)
+	}
+}
+
+func (ks *KafkaProducerService) sendMessage(topic string, message []byte) error {
+	log.Printf("sendMessage invoked! Sending the message!")
 	msg := &sarama.ProducerMessage{
 		Topic: topic,
 		Value: sarama.StringEncoder(message),

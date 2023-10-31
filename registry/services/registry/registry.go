@@ -10,6 +10,7 @@ import (
 	gAgents "github.com/totoual/gAgents/agent"
 	pb "github.com/totoual/gAgents/protos/registry"
 	chatgpt "github.com/totoual/gAgents/services/chatGPT"
+	"github.com/totoual/gAgents/services/kafka"
 	"google.golang.org/grpc"
 )
 
@@ -127,7 +128,7 @@ func (rs *RegistryService) SendHeartbeat(ctx context.Context, hb *pb.Heartbeat) 
 
 func (rs *RegistryService) Search(ctx context.Context, sm *pb.SearchMessage) (*pb.SearchMessageResponse, error) {
 	// For simplicity, just returning a success message without actually doing anything
-
+	log.Printf("Invoked Search function!")
 	// Emit event to convert the Message to Kafka Message.
 	responseChan := make(chan interface{})
 	event := gAgents.Event{
@@ -142,6 +143,27 @@ func (rs *RegistryService) Search(ctx context.Context, sm *pb.SearchMessage) (*p
 
 		sr := response.(chatgpt.SearchResult)
 		// Build the kafka Message to publish
+		kafka_message, err := kafka.NewKafkaSearchMessage(
+			sr.Object,
+			sr.Characteristics,
+			sr.Category,
+			sr.PriceRange,
+			sr.IntendedUse,
+			sr.MaterialPreferences,
+			sr.RelevantTopics,
+		)
+		fmt.Printf("Creating a search event!")
+		event := gAgents.Event{
+			Type:    kafka.KafkaSearchRequest,
+			Payload: kafka_message,
+		}
+
+		rs.eventDispatcher.Publish(event)
+
+		if err != nil {
+			fmt.Printf("Having error to create kafka message")
+		}
+		// Create the invent for send Message
 		// Successfully received a response
 		fmt.Printf("Registry: we receivend the response from ChatGPT: %v", sr)
 		fmt.Printf("The price is : %f", sr.PriceRange)

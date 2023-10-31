@@ -140,6 +140,7 @@ func (client *GPTClient) HandleSuggestionEvent(event gAgents.Event) {
 }
 
 func (client *GPTClient) HandleSearchEvent(event gAgents.Event) {
+	fmt.Printf("Invoke Search Event!")
 	payload, ok := event.Payload.(*pb.SearchMessage)
 	if !ok {
 		log.Println("Failed to convert event.Payload to *pb.SearchMessage")

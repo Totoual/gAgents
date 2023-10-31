@@ -50,7 +50,7 @@ func main() {
 	fmt.Printf(gpt.ApiKey)
 
 	agent.TaskScheduler.AddTask(heartbeat)
-	kafka, err := kafka.NewKafkaProducerService(
+	k, err := kafka.NewKafkaProducerService(
 		[]string{config.KafkaURL},
 		agent.Dispatcher,
 		config.Topics,
@@ -60,7 +60,7 @@ func main() {
 		fmt.Println("Error creating Kafka service:", err)
 		return
 	}
-	fmt.Println(kafka)
+	fmt.Println(k)
 	agent.RegisterService(reg)
 	fmt.Printf(agent.Addr)
 	agent.Run()
