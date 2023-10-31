@@ -1,0 +1,28 @@
+agent_name: "Alice"
+agent_url: "localhost:8020"
+kafka_url: "localhost:9092"
+registry_url: "localhost:8010"
+unique_id: "agent-12346"
+agent_type: "Service Provider"
+capabilities:
+ - "homeware"
+ - "kichenware"
+metadata:
+  software_version: "1.0.0"
+  location:
+    latitude: 51.509865
+    longitude: -0.118092
+  region: "London"
+  organization: "ACME Corp"
+status: 
+  current_status: "ACTIVE"
+auth_data:
+  token: "some-auth-token"
+  public_key: "some-public-key"
+contact_info:
+  email: "agent@example.com"
+  secondary_channel: "http://example.com/contact"
+tags: 
+  - "presents"
+  - "modern-kitchen"
+

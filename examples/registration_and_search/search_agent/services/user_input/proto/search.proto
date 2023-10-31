@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package user_interaction;
+option go_package= "github.com/totoual/gAgents/examples/registration_and_search/search_agent/services/user_input/user_interaction/";
+
+
+
+message UserSearchMessage{
+    string unique_id = 1;
+    string grpc_address = 2;
+    string description = 3;
+}
+
+message UserSearchMessageResponse{
+    bool success = 1;
+    string message = 2; 
+}
+
+// Service definition for the registry.
+service UserInteraction {
+    rpc UserSearch(UserSearchMessage) returns (UserSearchMessageResponse);
+}

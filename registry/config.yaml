@@ -1,0 +1,53 @@
+agent_name: "RegistryAgent"
+agent_url: "localhost:8010"
+kafka_url: "localhost:9092"
+topics:
+  - Fashion_Mens
+  - Fashion_Womens
+  - Fashion_Kids
+  - Fashion_Accessories
+  - Electronics_Computers
+  - Electronics_Mobiles
+  - Electronics_Accessories
+  - Electronics_HomeAppliances
+  - HomeGoods_Furniture
+  - HomeGoods_Decor
+  - HomeGoods_Kitchenware
+  - HomeGoods_BedBath
+  - SportingGoods_Outdoor
+  - SportingGoods_Indoor
+  - Toys_Games
+  - Toys_Educational
+  - Groceries_FreshFood
+  - Groceries_PackagedFood
+  - Groceries_Beverages
+  - Health_Beauty_Skincare
+  - Health_Beauty_PersonalCare
+  - Health_Beauty_Nutrition
+  - Gadgets
+  - Books_Music_Print
+  - Books_Music_Audio
+  - OfficeSupplies_Stationery
+  - OfficeSupplies_Equipment
+  - Handmade_Clothing
+  - Handmade_Jewelry
+  - Handmade_HomeDecor
+  - Handmade_ArtsCrafts
+  - Pets_Supplies
+  - Pets_Food
+  - Garden_OutdoorLiving
+  - Garden_PlantsSeeds
+  - Baby_Products
+  - Baby_Toys
+  - Baby_Clothing
+  - Specialty_Foods
+  - Specialty_Beverages
+  - Antiques_Collectibles
+  - Vintage_Items
+  - Holiday_Seasonal
+  - Novelties_Gifts
+  - Subscription_Boxes
+  - Event_Tickets
+  - Services_Professional
+  - Services_HomeServices
+

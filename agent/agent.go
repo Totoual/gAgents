@@ -8,11 +8,12 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	pb "github.com/totoual/gAgents/generated/proto" // Import the generated gRPC package
+	pb "github.com/totoual/gAgents/protos/messaging" // Import the generated gRPC package
 
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/reflection"
 )
 
 type Envelope struct {
@@ -78,6 +79,7 @@ type Agent struct {
 	handlers        map[string]Handler
 	services        []Service
 	acts            []Act
+	Dispatcher      *EventDispatcher
 	TaskScheduler   *TaskScheduler
 	ctx             context.Context
 	Cancel          context.CancelFunc
@@ -93,6 +95,7 @@ func NewAgent(name string, addr string) *Agent {
 		handlers:        make(map[string]Handler),
 		services:        make([]Service, 0),
 		acts:            make([]Act, 0),
+		Dispatcher:      NewEventDispatcher(ctx),
 		TaskScheduler:   NewTaskScheduler(ctx),
 		ctx:             ctx,
 		Cancel:          cancel,
@@ -227,6 +230,7 @@ func (a *Agent) Run() {
 	go a.TaskScheduler.ExecuteTasks()
 	// Start the gRPC server.
 	a.grpcSrv = grpc.NewServer()
+	reflection.Register(a.grpcSrv)
 	pb.RegisterMessageServiceServer(a.grpcSrv, &Server{Agent: a})
 
 	for _, service := range a.services {
