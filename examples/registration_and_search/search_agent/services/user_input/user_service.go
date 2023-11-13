@@ -43,23 +43,21 @@ func (s *UserInteractionService) UserSearch(ctx context.Context, in *pb.UserSear
 	defer conn.Close()
 	client := rb.NewAgentRegistryClient(conn)
 
-	go func() {
-		ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-		defer cancel()
-		fmt.Printf("Sending the message to registry, or I am trying")
-		response, err := client.Search(ctx, &rb.SearchMessage{
-			UniqueId:    s.Config.UniqueID,
-			GrpcAddress: s.Config.AgentURL,
-			Description: in.Description,
-		})
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+	fmt.Printf("Sending the message to registry, or I am trying")
+	response, err := client.Search(ctx, &rb.SearchMessage{
+		UniqueId:    s.Config.UniqueID,
+		GrpcAddress: s.Config.AgentURL,
+		Description: in.Description,
+	})
 
-		if err != nil {
-			fmt.Errorf("error sending message: %v", err)
-		} else {
-			// Handle the search response...
-			fmt.Printf("Search response: %v\n", response.Message)
-		}
-	}()
+	if err != nil {
+		fmt.Errorf("error sending message: %v", err)
+	} else {
+		// Handle the search response...
+		fmt.Printf("Search response: %v\n", response.Message)
+	}
 
 	// Immediately respond to the user indicating the search has been initiated.
 	return &pb.UserSearchMessageResponse{

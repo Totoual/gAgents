@@ -65,7 +65,7 @@ func (t *HeartbeatTask) Execute() {
 	if !response.Success {
 		t.stop_contidition = true
 	}
-	log.Println(response)
+	// log.Println(response)
 }
 
 func (t *HeartbeatTask) Interval() time.Duration {
