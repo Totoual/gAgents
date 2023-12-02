@@ -13,10 +13,18 @@ func (cfp CFPContentType) GetCart() *[]Item {
 	return &cfp.Cart
 }
 
-type ProposalCFPContentType struct {
+type ProposalContentType struct {
 	Cart []Item `json:"cart"`
 }
 
-func (p ProposalCFPContentType) GetCart() *[]Item {
+func (p ProposalContentType) GetCart() *[]Item {
 	return &p.Cart
+}
+
+type RejectContentType struct {
+	Cart []Item `json:"cart"`
+}
+
+func (r RejectContentType) GetCart() *[]Item {
+	return &r.Cart
 }
