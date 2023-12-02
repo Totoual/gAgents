@@ -12,3 +12,11 @@ type CFPContentType struct {
 func (cfp CFPContentType) GetCart() *[]Item {
 	return &cfp.Cart
 }
+
+type ProposalCFPContentType struct {
+	Cart []Item `json:"cart"`
+}
+
+func (p ProposalCFPContentType) GetCart() *[]Item {
+	return &p.Cart
+}

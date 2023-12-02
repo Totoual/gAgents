@@ -63,17 +63,26 @@ func (h *UniversalHandler) handleCFP(fipaMsg *FIPAMessage) {
 	}
 
 	response := logic.Apply(fipaMsg.Performative, &fipaMsg.Content)
+	var content FipaContent
+	switch response.Performative {
+	case CFP:
+		content = response.AdditionalInfo.(CFPContentType) // Type assertion
+	case PROPOSAL:
+		content = response.AdditionalInfo.(ProposalCFPContentType)
+		// ... other performatives
+	}
+
 	responseMsg := NewFIPAMessage(
 		fipaMsg.Nonce+1,
 		fipaMsg.Protocol,
-		response.GetPerformative(),
+		response.Performative,
 		fipaMsg.ConversationID,
 		fipaMsg.ReplyWith,
 		fipaMsg.ReplyBy,
 		fipaMsg.InReplyWith,
 		fipaMsg.Sender,
 		fipaMsg.Receiver,
-		response.GetContent())
+		content)
 
 	// Send the response message
 	h.agent.OutMessageQueue <- *gAgents.NewEnvelope(responseMsg)

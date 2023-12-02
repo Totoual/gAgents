@@ -13,28 +13,6 @@ type Item struct {
 	Price       float32 `json:"price"`
 }
 
-type CFPContentType struct {
-	Performative Performative `json:"performative"`
-	Cart         []Item       `json:"cart"`
-	Total        float32      `json:"total"`
-}
-
-type BusinessLogicContext struct {
-	Performative Performative
-	Cart         []Item
-}
-
-func NewBusinessLogicContext(performative Performative, cart []Item, total float32) *BusinessLogicContext {
-	return &BusinessLogicContext{
-		Performative: performative,
-		Cart:         cart,
-	}
-}
-
-type BusinessLogic interface {
-	Apply(*FipaContent) *BusinessLogicContext
-}
-
 const (
 	CFP Performative = iota
 	PROPOSAL
@@ -104,5 +82,3 @@ func (fm *FIPAMessage) Serialize() ([]byte, error) {
 func (fm *FIPAMessage) GetPerformative() int {
 	return int(fm.Performative)
 }
-
-type FipaContent interface{}
