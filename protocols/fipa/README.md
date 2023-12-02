@@ -45,7 +45,7 @@ The FIPA protocol in gAgents allows for flexible and robust communication betwee
 ## Files
 
 - `fipa_message.go`: Defines the `FIPAMessage` struct and `FipaContent` interface used for all FIPA messages.
-- `fipa_handler.go`: Contains the `UniversalHandler` for handling all FIPA messages.
+- `fipa_handler.go`: Contains the `FIPAHandler` for handling all FIPA messages.
 - `fipa_business_logic_ctx.go`: Defines the `BusinessLogic` interface and `BusinessLogicContext` for implementing custom business logic.
 
 ## Setting Up
@@ -86,11 +86,11 @@ func (mbl *MyBusinessLogic) Apply(performative Performative, content *FipaConten
 
 ### 3. Set Up the Universal Handler
 
-In your agent's setup, initialize the `UniversalHandler` and set the business logic for each FIPA performative:
+In your agent's setup, initialize the `FIPAHandler` and set the business logic for each FIPA performative:
 
 ```go
 agent := gAgents.NewAgent("AgentName", "localhost:8080")
-handler := fipa.NewUniversalHandler(agent)
+handler := fipa.NewFIPAHandler(agent)
 handler.SetBusinessLogic(fipa.CFP, &MyBusinessLogic{})
 // Set other performatives as needed
 ```
@@ -105,7 +105,7 @@ agent.Run()
 
 ## Message Flow
 
-1. When a FIPA message is received, the `UniversalHandler` de-serializes it into a `FIPAMessage`.
+1. When a FIPA message is received, the `FIPAHandler` de-serializes it into a `FIPAMessage`.
 2. The handler checks the performative of the message and calls the appropriate business logic.
 3. The business logic processes the message and returns a `BusinessLogicContext`.
 4. The handler constructs a new FIPA message based on the response and sends it out.
@@ -114,6 +114,6 @@ agent.Run()
 
 - Implement different `BusinessLogic` for different scenarios or performatives.
 - Define your own content types as per your application's requirements.
-- Customize the `UniversalHandler` if additional message processing is needed.
+- Customize the `FIPAHandler` if additional message processing is needed.
 
 ---

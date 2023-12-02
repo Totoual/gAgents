@@ -6,23 +6,23 @@ import (
 	gAgents "github.com/totoual/gAgents/agent"
 )
 
-type UniversalHandler struct {
+type FIPAHandler struct {
 	agent          *gAgents.Agent
 	businessLogics map[Performative]BusinessLogic
 }
 
-func NewUniversalHandler(agent *gAgents.Agent) *UniversalHandler {
-	return &UniversalHandler{
+func NewFIPAHandler(agent *gAgents.Agent) *FIPAHandler {
+	return &FIPAHandler{
 		agent:          agent,
 		businessLogics: make(map[Performative]BusinessLogic),
 	}
 }
 
-func (h *UniversalHandler) SetBusinessLogic(performative Performative, logic BusinessLogic) {
+func (h *FIPAHandler) SetBusinessLogic(performative Performative, logic BusinessLogic) {
 	h.businessLogics[performative] = logic
 }
 
-func (h *UniversalHandler) HandleMessage(envelope gAgents.Envelope) {
+func (h *FIPAHandler) HandleMessage(envelope gAgents.Envelope) {
 	m, err := envelope.ToMessage(&FIPAMessage{})
 	if err != nil {
 		log.Printf("Error deserializing message: %v", err)
@@ -38,7 +38,7 @@ func (h *UniversalHandler) HandleMessage(envelope gAgents.Envelope) {
 	h.processMessage(fipaMsg)
 }
 
-func (h *UniversalHandler) processMessage(fipaMsg *FIPAMessage) {
+func (h *FIPAHandler) processMessage(fipaMsg *FIPAMessage) {
 	logic, exists := h.businessLogics[fipaMsg.Performative]
 	if !exists {
 		log.Printf("No business logic defined for performative: %v", fipaMsg.Performative)
@@ -54,7 +54,7 @@ func (h *UniversalHandler) processMessage(fipaMsg *FIPAMessage) {
 	h.sendMessage(fipaMsg, response)
 }
 
-func (h *UniversalHandler) sendMessage(fipaMsg *FIPAMessage, response *BusinessLogicContext) {
+func (h *FIPAHandler) sendMessage(fipaMsg *FIPAMessage, response *BusinessLogicContext) {
 	var content FipaContent
 	if response.AdditionalInfo != nil {
 		content = response.AdditionalInfo.(FipaContent)
