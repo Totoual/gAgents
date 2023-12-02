@@ -6,12 +6,7 @@ import (
 
 type Performative int
 
-type Item struct {
-	Sku         string  `json:"sku"`
-	Name        string  `json:"name"`
-	Description string  `json:"description"`
-	Price       float32 `json:"price"`
-}
+type FipaContent interface{}
 
 const (
 	CFP Performative = iota
