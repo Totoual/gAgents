@@ -35,29 +35,30 @@ func (s *UserInteractionService) UserSearch(ctx context.Context, in *pb.UserSear
 	// Implement your search logic here...
 	// For example:
 	fmt.Printf("Received search request from %v: %v\n", in.UniqueId, in.Description)
+	go func() {
+		conn, err := grpc.Dial(s.Config.RegistryURL, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err != nil {
+			fmt.Errorf("failed to connect: %v", err)
+		}
+		defer conn.Close()
+		client := rb.NewAgentRegistryClient(conn)
 
-	conn, err := grpc.Dial(s.Config.RegistryURL, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		fmt.Errorf("failed to connect: %v", err)
-	}
-	defer conn.Close()
-	client := rb.NewAgentRegistryClient(conn)
+		ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+		defer cancel()
+		fmt.Printf("Sending the message to registry, or I am trying")
+		response, err := client.Search(ctx, &rb.SearchMessage{
+			UniqueId:    s.Config.UniqueID,
+			GrpcAddress: s.Config.AgentURL,
+			Description: in.Description,
+		})
 
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-	defer cancel()
-	fmt.Printf("Sending the message to registry, or I am trying")
-	response, err := client.Search(ctx, &rb.SearchMessage{
-		UniqueId:    s.Config.UniqueID,
-		GrpcAddress: s.Config.AgentURL,
-		Description: in.Description,
-	})
-
-	if err != nil {
-		fmt.Errorf("error sending message: %v", err)
-	} else {
-		// Handle the search response...
-		fmt.Printf("Search response: %v\n", response.Message)
-	}
+		if err != nil {
+			fmt.Errorf("error sending message: %v", err)
+		} else {
+			// Handle the search response...
+			fmt.Printf("Search response: %v\n", response.Message)
+		}
+	}()
 
 	// Immediately respond to the user indicating the search has been initiated.
 	return &pb.UserSearchMessageResponse{
