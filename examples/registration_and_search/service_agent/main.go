@@ -43,7 +43,8 @@ func main() {
 		return
 	}
 	fmt.Println(kafka)
-
+	proposal := acts.NewSendProposalAct(config, agent.Dispatcher)
+	fmt.Println(proposal)
 	agent.Run()
 
 }

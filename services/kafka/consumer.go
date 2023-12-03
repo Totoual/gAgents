@@ -12,6 +12,7 @@ import (
 
 const (
 	KafkaRegistration gAgents.EventType = "KafkaRegistrationMessage"
+	KafkaSearch       gAgents.EventType = "KafkaSearch"
 )
 
 type KafkaConsumerService struct {
@@ -61,7 +62,7 @@ func (ks *KafkaConsumerService) handleRegistrationEvent(event gAgents.Event) {
 	log.Println(registration_response)
 
 	for _, topic := range registration_response.Topics {
-		err := ks.ConsumeMessages(topic, KafkaRegistration, ks.EmitEvent)
+		err := ks.ConsumeMessages(topic, ks.EmitEvent)
 		if err != nil {
 			log.Println("Failed to subscribe to topic", topic, ":", err)
 		} else {
@@ -80,7 +81,7 @@ func (ks *KafkaConsumerService) EmitEvent(kafka_type gAgents.EventType, message 
 	if err != nil {
 		fmt.Errorf("Could not unmarsal the message.")
 	}
-	fmt.Println("The message I received is: %s", msg.Category)
+	fmt.Println("The message I received is: %s", msg)
 	event := gAgents.Event{
 		Type:    kafka_type,
 		Payload: message,
@@ -89,9 +90,9 @@ func (ks *KafkaConsumerService) EmitEvent(kafka_type gAgents.EventType, message 
 	ks.eventDispatcher.Publish(event)
 }
 
-func (ks *KafkaConsumerService) ConsumeMessages(topic string, kafka_type gAgents.EventType, handler func(gAgents.EventType, []byte)) error {
+func (ks *KafkaConsumerService) ConsumeMessages(topic string, handler func(gAgents.EventType, []byte)) error {
 
-	consumer, err := ks.consumer.ConsumePartition(topic, 0, sarama.OffsetOldest)
+	consumer, err := ks.consumer.ConsumePartition(topic, 0, sarama.OffsetNewest)
 	if err != nil {
 		return err
 	}
@@ -100,7 +101,7 @@ func (ks *KafkaConsumerService) ConsumeMessages(topic string, kafka_type gAgents
 		for {
 			select {
 			case msg := <-consumer.Messages():
-				handler(kafka_type, msg.Value)
+				handler(KafkaSearch, msg.Value)
 			case err := <-consumer.Errors():
 				// handle error
 				log.Println(err)
