@@ -33,4 +33,7 @@ func handleKafkaSearchEvent(e gAgents.Event) {
 	}
 
 	log.Println(msg)
+
+	// This is where we analyse the search query, and see if we want to send a proposal or not.
+	// A connection with a db, to check the details. If we are looking for an item or something.
 }
