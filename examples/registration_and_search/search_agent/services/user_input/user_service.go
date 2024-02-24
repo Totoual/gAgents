@@ -35,15 +35,14 @@ func (s *UserInteractionService) UserSearch(ctx context.Context, in *pb.UserSear
 	// Implement your search logic here...
 	// For example:
 	fmt.Printf("Received search request from %v: %v\n", in.UniqueId, in.Description)
-
-	conn, err := grpc.Dial(s.Config.RegistryURL, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		fmt.Errorf("failed to connect: %v", err)
-	}
-	defer conn.Close()
-	client := rb.NewAgentRegistryClient(conn)
-
 	go func() {
+		conn, err := grpc.Dial(s.Config.RegistryURL, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err != nil {
+			fmt.Errorf("failed to connect: %v", err)
+		}
+		defer conn.Close()
+		client := rb.NewAgentRegistryClient(conn)
+
 		ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 		defer cancel()
 		fmt.Printf("Sending the message to registry, or I am trying")

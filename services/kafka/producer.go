@@ -15,6 +15,8 @@ const (
 )
 
 type KafkaSearchMessage struct {
+	UniqueId            string   `json:"unique_id"`
+	GrpcAddress         string   `json:"grpc_address"`
 	Object              string   `json:"object"`
 	Characteristics     []string `json:"characteristics"`
 	Category            string   `json:"category"`
@@ -25,6 +27,8 @@ type KafkaSearchMessage struct {
 }
 
 func NewKafkaSearchMessage(
+	unique_id string,
+	grpc_address string,
 	object string,
 	characteristics []string,
 	category string,
@@ -34,6 +38,8 @@ func NewKafkaSearchMessage(
 	relevant_topics []string,
 ) (*KafkaSearchMessage, error) {
 	return &KafkaSearchMessage{
+		UniqueId:            unique_id,
+		GrpcAddress:         grpc_address,
 		Object:              object,
 		Characteristics:     characteristics,
 		Category:            category,

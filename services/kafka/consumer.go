@@ -1,11 +1,18 @@
 package kafka
 
 import (
+	"encoding/json"
+	"fmt"
 	"log"
 
 	"github.com/IBM/sarama"
 	gAgents "github.com/totoual/gAgents/agent"
 	pb "github.com/totoual/gAgents/protos/registry"
+)
+
+const (
+	KafkaRegistration gAgents.EventType = "KafkaRegistrationMessage"
+	KafkaSearch       gAgents.EventType = "KafkaSearch"
 )
 
 type KafkaConsumerService struct {
@@ -14,10 +21,21 @@ type KafkaConsumerService struct {
 	eventDispatcher *gAgents.EventDispatcher
 }
 
+type KafkaConsumerMessage struct {
+	UniqueId            string   `json:"unique_id"`
+	GrpcAddress         string   `json:"grpc_address"`
+	Object              string   `json:"object"`
+	Characteristics     []string `json:"characteristics"`
+	Category            string   `json:"category"`
+	PriceRange          float32  `json:"price_range"`
+	IntendedUse         string   `json:"intended_use"`
+	MaterialPreferences []string `json:"material_preferences"`
+	RelevantTopics      []string `json:"relevant_topics"`
+}
+
 func NewKafkaConsumerService(brokers []string, ed *gAgents.EventDispatcher, e gAgents.EventType) (*KafkaConsumerService, error) {
 	config := sarama.NewConfig()
 	config.Consumer.Return.Errors = true
-
 	consumer, err := sarama.NewConsumer(brokers, config)
 	if err != nil {
 		return nil, err
@@ -55,18 +73,26 @@ func (ks *KafkaConsumerService) handleRegistrationEvent(event gAgents.Event) {
 	event.ResponseChan <- "Subscribed to topics successfully."
 }
 
-func (ks *KafkaConsumerService) EmitEvent(message []byte) {
+func (ks *KafkaConsumerService) EmitEvent(kafka_type gAgents.EventType, message []byte) {
+	fmt.Printf("Publishing a new event needs to be handled!")
+	fmt.Println(kafka_type)
+	var msg KafkaConsumerMessage
+	err := json.Unmarshal(message, &msg)
+	if err != nil {
+		fmt.Errorf("Could not unmarsal the message.")
+	}
+	fmt.Println("The message I received is: %s", msg)
 	event := gAgents.Event{
-		Type:    "KafkaMessage",
+		Type:    kafka_type,
 		Payload: message,
 	}
 
 	ks.eventDispatcher.Publish(event)
 }
 
-func (ks *KafkaConsumerService) ConsumeMessages(topic string, handler func(message []byte)) error {
+func (ks *KafkaConsumerService) ConsumeMessages(topic string, handler func(gAgents.EventType, []byte)) error {
 
-	consumer, err := ks.consumer.ConsumePartition(topic, 0, sarama.OffsetOldest)
+	consumer, err := ks.consumer.ConsumePartition(topic, 0, sarama.OffsetNewest)
 	if err != nil {
 		return err
 	}
@@ -75,7 +101,7 @@ func (ks *KafkaConsumerService) ConsumeMessages(topic string, handler func(messa
 		for {
 			select {
 			case msg := <-consumer.Messages():
-				handler(msg.Value)
+				handler(KafkaSearch, msg.Value)
 			case err := <-consumer.Errors():
 				// handle error
 				log.Println(err)
