@@ -69,8 +69,6 @@ func (h *FIPAHandler) sendMessage(fipaMsg *FIPAMessage, response *BusinessLogicC
 		response.Performative,
 		fipaMsg.ConversationID,
 		fipaMsg.ReplyWith,
-		fipaMsg.ReplyBy,
-		fipaMsg.InReplyWith,
 		fipaMsg.Sender,
 		fipaMsg.Receiver,
 		content)
